@@ -2,6 +2,7 @@ import numpy as np
 from mpl_toolkits.axes_grid.axislines import SubplotZero
 import matplotlib.gridspec as gridspec
 from stfio import plot as stfio_plot
+import sys
 
 
 class ZeroAxis(SubplotZero):
