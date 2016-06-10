@@ -44,6 +44,12 @@ def whole_cell_iv(start_pulse=None, end_pulse=None):
         End of v clamp pulse in ms or None to determine automatically
     """
     import stf
+    nchannels = stf.get_size_recording()
+    if nchannels < 2:
+        sys.stderr.write(
+            "Function requires 2 channels (0: current; 1: voltage)\n")
+        return
+
     dt = stf.get_sampling_interval()
 
     pulse = stf.get_trace(trace=stf.get_size_channel()-1, channel=1)
@@ -73,7 +79,7 @@ def whole_cell_iv(start_pulse=None, end_pulse=None):
         stf.set_peak_direction("down")
         # Set peak computation to single sampling point
         stf.set_peak_mean(1)
-        stf.peak.cursor_time = (start_pulse+0.4, start_pulse+20.0)
+        stf.peak.cursor_time = (start_pulse+0.3, start_pulse+20.0)
         stf.measure()
         inward_peaks.append(stf.peak.value)
 
