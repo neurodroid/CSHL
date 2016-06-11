@@ -1,8 +1,12 @@
+import sys
+
 import numpy as np
+from scipy.optimize import leastsq
+
 from mpl_toolkits.axes_grid.axislines import SubplotZero
 import matplotlib.gridspec as gridspec
+
 from stfio import plot as stfio_plot
-import sys
 
 
 class ZeroAxis(SubplotZero):
@@ -33,15 +37,54 @@ def plot_iv(i, v, iunits, vunits, fig, subplot, sharex=None):
     return ax
 
 
-def whole_cell_iv(start_pulse=None, end_pulse=None):
+def plot_gv(g, v, vunits, gfit, fig, subplot, sharex=None):
+
+    ax = ZeroAxis(fig, subplot, sharex=sharex)
+    ax.plot(v, g, 'o', color='k', ms=12, mec='none')
+    xfit = np.arange(v.min(), v.max(), 0.1)
+    ax.plot(xfit, fboltz_up(gfit, xfit), '-k')
+
+    ax.spines['left'].set_position('center')
+    ax.spines['bottom'].set_position('center')
+
+    ax.set_xlabel("$V$ ({0})".format(vunits))
+    ax.set_ylabel("$g/g_{max}$")
+
+    return ax
+
+
+def leastsq_helper(p, y, lsfunc, x, *args):
+    return y - lsfunc(p, x, *args)
+
+
+def fboltz_up(p, x):
     """
-    Compute and plot a whole-cell IV curve for an open file with Stimfit.
+    Boltzmann function (upwards from 0 to 1)
 
     Parameters
     ==========
-    start_pulse -- float
-        Start of v clamp pulse in ms or None to determine automatically
-    end_pulse -- float
+    p -- numpy.ndarray
+        p[0]: location of half maximum
+        p[1]: slope
+    x -- numpy.ndarray
+        Dependent variable
+
+    Returns
+    =======
+    $y = 1 - \frac{1}{1 + e^{x-p_0}/p_1}
+    """
+    return 1.0 - 1.0/(1.0+np.exp((x-p[0])/p[1]))
+
+
+def iv(window, erev, peakmode="up"):
+    """
+    Compute and plot an IV curve for currents
+
+    Parameters
+    ==========
+    window -- (float, float)
+        Window for peak measurement, starting from beginning of pulse
+    erev -- float
         End of v clamp pulse in ms or None to determine automatically
     """
     import stf
@@ -54,21 +97,21 @@ def whole_cell_iv(start_pulse=None, end_pulse=None):
     dt = stf.get_sampling_interval()
 
     pulse = stf.get_trace(trace=stf.get_size_channel()-1, channel=1)
-    if start_pulse is None:
-        start_pulse = np.argmax(np.diff(pulse))*dt
-    if end_pulse is None:
-        end_pulse = np.argmin(np.diff(pulse))*dt
-        
+
+    start_pulse = np.argmax(np.diff(pulse))*dt
+    end_pulse = np.argmin(np.diff(pulse))*dt
+
     v_commands = []
-    inward_peaks, outward_ss, outward_peaks = [], [], []
+    ipeaks = []
     stf.base.cursor_time = (start_pulse-20.0, start_pulse-10.0)
 
     fig = stf.mpl_panel(figsize=(12, 8)).fig
     fig.clear()
-    gs = gridspec.GridSpec(4, 5)
-    ax_currents = stfio_plot.StandardAxis(fig, gs[:3, :3], hasx=False, hasy=False)
+    gs = gridspec.GridSpec(4, 8)
+    ax_currents = stfio_plot.StandardAxis(
+        fig, gs[:3, :4], hasx=False, hasy=False)
     ax_voltages = stfio_plot.StandardAxis(
-        fig, gs[3:, :3], hasx=False, hasy=False, sharex=ax_currents)
+        fig, gs[3:, :4], hasx=False, hasy=False, sharex=ax_currents)
     for ntrace in range(stf.get_size_channel()):
         stf.set_trace(ntrace)
         stf.set_channel(0)
@@ -77,25 +120,20 @@ def whole_cell_iv(start_pulse=None, end_pulse=None):
         ax_currents.plot(np.arange(len(trace))*dt, trace)
 
         # Measure only downward peaks (inward currents)
-        stf.set_peak_direction("down")
-        # Set peak computation to single sampling point
-        stf.set_peak_mean(1)
-        stf.peak.cursor_time = (start_pulse+0.3, start_pulse+20.0)
+        if peakmode is "mean":
+            stf.set_peak_direction("up")
+            stf.set_peak_mean(-1)
+        else:
+            stf.set_peak_direction(peakmode)
+            # Set peak computation to single sampling point
+            stf.set_peak_mean(1)
+
+        stf.peak.cursor_time = (
+            start_pulse+window[0], start_pulse+window[1])
         stf.measure()
-        inward_peaks.append(stf.peak.value)
+        ipeaks.append(stf.peak.value)
 
-        stf.set_peak_direction("up")
-
-        stf.peak.cursor_time = (start_pulse+2.0, start_pulse+50.0)
-        stf.measure()
-        outward_peaks.append(stf.peak.value)
-
-        # Set peak computation to mean of peak window
-        stf.set_peak_mean(-1)
-        stf.peak.cursor_time = (end_pulse-20.0, end_pulse-10.0)
-        stf.measure()
-        outward_ss.append(stf.peak.value)
-
+        # Measure pulse amplitude
         stf.set_channel(1)
         trace = stf.get_trace()
         ax_voltages.plot(np.arange(len(trace))*dt, trace)
@@ -111,33 +149,47 @@ def whole_cell_iv(start_pulse=None, end_pulse=None):
     stfio_plot.plot_scalebars(
         ax_voltages, xunits=stf.get_xunits(), yunits=stf.get_yunits(channel=1))
 
+    v_commands = np.array(v_commands)
+    ipeaks = np.array(ipeaks)
+
     # Reset peak computation to single sampling point
     stf.set_peak_mean(1)
 
     # Reset active channel
     stf.set_channel(0)
 
-    ax_inward = plot_iv(
-        inward_peaks, v_commands, stf.get_yunits(channel=0),
-        stf.get_yunits(channel=1), fig, 322)
-    ax_outward = plot_iv(
-        outward_peaks, v_commands, stf.get_yunits(channel=0),
-        stf.get_yunits(channel=1), fig, 324, sharex=ax_inward)
-    ax_ss = plot_iv(
-        outward_ss, v_commands, stf.get_yunits(channel=0),
-        stf.get_yunits(channel=1), fig, 326, sharex=ax_inward)
+    # Compute conductances:
+    gpeaks, g_fit = gv(ipeaks, v_commands, erev)
+
+    ax_ipeaks = plot_iv(
+        ipeaks, v_commands, stf.get_yunits(channel=0),
+        stf.get_yunits(channel=1), fig, 222)
+
+    ax_ipeaks.set_title("Peak current")
+
+    ax_gpeaks = plot_gv(
+        gpeaks, v_commands, stf.get_yunits(channel=1),
+        g_fit, fig, 224)
+    ax_gpeaks.set_title("Peak conductance")
 
     stf.show_table_dictlist({
         "Voltage ({0})".format(
-            stf.get_yunits(channel=1)): v_commands,
-        "Peak inward current ({0})".format(
-            stf.get_yunits(channel=0)): inward_peaks,
-        "Peak outward current ({0})".format(
-            stf.get_yunits(channel=0)): outward_peaks,
-        "Steady-state outward current ({0})".format(
-            stf.get_yunits(channel=0)): outward_ss
+            stf.get_yunits(channel=1)): v_commands.tolist(),
+        "Peak current ({0})".format(
+            stf.get_yunits(channel=0)): ipeaks.tolist(),
+        "Peak conductance (g/g_max)": gpeaks.tolist(),
     })
-    
-    ax_inward.set_title("Peak inward current")
-    ax_outward.set_title("Peak outward current")
-    ax_ss.set_title("Steady-state outward current")
+
+    return v_commands, ipeaks, gpeaks, g_fit
+
+
+def gv(i, v, erev):
+    g = i / (v-erev)
+    g /= g.max()
+
+    v50_init = 0.0
+    slope_init = 1.0
+    gfit = leastsq(
+        leastsq_helper, (v50_init, slope_init), args=(g, fboltz_up, v))[0]
+
+    return g, gfit
