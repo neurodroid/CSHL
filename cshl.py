@@ -60,7 +60,7 @@ def whole_cell_iv(start_pulse=None, end_pulse=None):
         end_pulse = np.argmin(np.diff(pulse))*dt
         
     v_commands = []
-    inward_peaks, outward_peaks = [], []
+    inward_peaks, outward_ss, outward_peaks = [], [], []
     stf.base.cursor_time = (start_pulse-20.0, start_pulse-10.0)
 
     fig = stf.mpl_panel(figsize=(12, 8)).fig
@@ -85,11 +85,16 @@ def whole_cell_iv(start_pulse=None, end_pulse=None):
         inward_peaks.append(stf.peak.value)
 
         stf.set_peak_direction("up")
+
+        stf.peak.cursor_time = (start_pulse+2.0, start_pulse+50.0)
+        stf.measure()
+        outward_peaks.append(stf.peak.value)
+
         # Set peak computation to mean of peak window
         stf.set_peak_mean(-1)
         stf.peak.cursor_time = (end_pulse-20.0, end_pulse-10.0)
         stf.measure()
-        outward_peaks.append(stf.peak.value)
+        outward_ss.append(stf.peak.value)
 
         stf.set_channel(1)
         trace = stf.get_trace()
@@ -109,12 +114,30 @@ def whole_cell_iv(start_pulse=None, end_pulse=None):
     # Reset peak computation to single sampling point
     stf.set_peak_mean(1)
 
+    # Reset active channel
+    stf.set_channel(0)
+
     ax_inward = plot_iv(
         inward_peaks, v_commands, stf.get_yunits(channel=0),
-        stf.get_yunits(channel=1), fig, 222)
+        stf.get_yunits(channel=1), fig, 322)
     ax_outward = plot_iv(
         outward_peaks, v_commands, stf.get_yunits(channel=0),
-        stf.get_yunits(channel=1), fig, 224, sharex=ax_inward)
+        stf.get_yunits(channel=1), fig, 324, sharex=ax_inward)
+    ax_ss = plot_iv(
+        outward_ss, v_commands, stf.get_yunits(channel=0),
+        stf.get_yunits(channel=1), fig, 326, sharex=ax_inward)
 
+    stf.show_table_dictlist({
+        "Voltage ({0})".format(
+            stf.get_yunits(channel=1)): v_commands,
+        "Peak inward current ({0})".format(
+            stf.get_yunits(channel=0)): inward_peaks,
+        "Peak outward current ({0})".format(
+            stf.get_yunits(channel=0)): outward_peaks,
+        "Steady-state outward current ({0})".format(
+            stf.get_yunits(channel=0)): outward_ss
+    })
+    
     ax_inward.set_title("Peak inward current")
-    ax_outward.set_title("Steady-state outward current")    
+    ax_outward.set_title("Peak outward current")
+    ax_ss.set_title("Steady-state outward current")
