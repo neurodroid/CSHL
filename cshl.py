@@ -3,13 +3,13 @@ import sys
 import numpy as np
 from scipy.optimize import leastsq
 
-from mpl_toolkits.axes_grid.axislines import SubplotZero
+from mpl_toolkits.axes_grid.axislines import SubplotZero, Subplot
 import matplotlib.gridspec as gridspec
 
 from stfio import plot as stfio_plot
 
 
-class ZeroAxis(SubplotZero):
+class ZeroAxis(Subplot):
     def __init__(self, *args, **kwargs):
         kwargs['frameon'] = False
 
@@ -17,10 +17,7 @@ class ZeroAxis(SubplotZero):
 
         args[0].add_axes(self)
 
-        for direction in ["xzero", "yzero"]:
-            self.axis[direction].set_visible(True)
-
-        for direction in ["left", "right", "bottom", "top"]:
+        for direction in ["right", "top"]:
             self.axis[direction].set_visible(False)
            
 
@@ -76,18 +73,21 @@ def fboltz_up(p, x):
     return 1.0 - 1.0/(1.0+np.exp((x-p[0])/p[1]))
 
 
-def iv(window, erev, peakmode="up"):
+def timeconstants(fitwindow, pulsewindow):
     """
-    Compute and plot an IV curve for currents
+    Compute and plot decay time constants
 
     Parameters
     ==========
-    window -- (float, float)
-        Window for peak measurement, starting from beginning of pulse
-    erev -- float
-        End of v clamp pulse in ms or None to determine automatically
+    fitwindow -- (float, float)
+        Window for peak measurement (time in ms from beginning of sweep)
+    pulsewindow -- (float, float)
+        Window for voltage pulse measurement (time in ms from beginning of sweep)
     """
     import stf
+    if not stf.check_doc():
+        return None
+
     nchannels = stf.get_size_recording()
     if nchannels < 2:
         sys.stderr.write(
@@ -96,14 +96,99 @@ def iv(window, erev, peakmode="up"):
 
     dt = stf.get_sampling_interval()
 
-    pulse = stf.get_trace(trace=stf.get_size_channel()-1, channel=1)
+    v_commands = []
+    taus = []
 
-    start_pulse = np.argmax(np.diff(pulse))*dt
-    end_pulse = np.argmin(np.diff(pulse))*dt
+    fig = stf.mpl_panel(figsize=(12, 8)).fig
+    fig.clear()
+    gs = gridspec.GridSpec(4, 8)
+    ax_currents = stfio_plot.StandardAxis(
+        fig, gs[:3, :4], hasx=False, hasy=False)
+    ax_voltages = stfio_plot.StandardAxis(
+        fig, gs[3:, :4], hasx=False, hasy=False, sharex=ax_currents)
+    for ntrace in range(stf.get_size_channel()):
+        stf.set_trace(ntrace)
+        stf.set_channel(0)
+        trace = stf.get_trace()
+
+        ax_currents.plot(np.arange(len(trace))*dt, trace)
+
+        stf.fit.cursor_time = fitwindow
+        res = stf.leastsq(0, False)
+        taus.append(res['Tau_0'])
+
+        # Measure pulse amplitude
+        stf.set_channel(1)
+        trace = stf.get_trace()
+        ax_voltages.plot(np.arange(len(trace))*dt, trace)
+
+        stf.set_peak_direction("up")
+        stf.set_peak_mean(-1)
+        stf.peak.cursor_time = pulsewindow
+        stf.measure()
+        v_commands.append(stf.peak.value)
+
+    stfio_plot.plot_scalebars(
+        ax_currents, xunits=stf.get_xunits(), yunits=stf.get_yunits(channel=0))
+    stfio_plot.plot_scalebars(
+        ax_voltages, xunits=stf.get_xunits(), yunits=stf.get_yunits(channel=1))
+
+    v_commands = np.array(v_commands)
+    taus = np.array(taus)
+
+    ax_taus = plot_iv(
+        taus, v_commands, "ms",
+        stf.get_yunits(channel=1), fig, 122)
+    
+    # Reset peak computation to single sampling point
+    stf.set_peak_mean(1)
+
+    # Reset active channel
+    stf.set_channel(0)
+
+    # Compute conductances:
+    stf.show_table_dictlist({
+        "Voltage ({0})".format(
+            stf.get_yunits(channel=1)): v_commands.tolist(),
+        "Taus (ms)": taus.tolist(),
+    })
+
+    return v_commands, taus
+
+    
+def iv(peakwindow, basewindow, pulsewindow, erev, peakmode="up"):
+    """
+    Compute and plot an IV curve for currents
+
+    Parameters
+    ==========
+    peakwindow -- (float, float)
+        Window for peak measurement (time in ms from beginning of sweep)
+    basewindow -- (float, float)
+        Window for baseline measurement (time in ms from beginning of sweep)
+    pulsewindow -- (float, float)
+        Window for voltage pulse measurement (time in ms from beginning of sweep)
+    erev -- float
+        End of v clamp pulse in ms or None to determine automatically
+    peakmode -- string
+        Peak direction - one of "up", "down", "mean"
+    """
+    import stf
+    if not stf.check_doc():
+        return None
+
+    nchannels = stf.get_size_recording()
+    if nchannels < 2:
+        sys.stderr.write(
+            "Function requires 2 channels (0: current; 1: voltage)\n")
+        return
+
+    dt = stf.get_sampling_interval()
 
     v_commands = []
     ipeaks = []
-    stf.base.cursor_time = (start_pulse-20.0, start_pulse-10.0)
+    if basewindow is not None:
+        stf.base.cursor_time = basewindow
 
     fig = stf.mpl_panel(figsize=(12, 8)).fig
     fig.clear()
@@ -128,10 +213,12 @@ def iv(window, erev, peakmode="up"):
             # Set peak computation to single sampling point
             stf.set_peak_mean(1)
 
-        stf.peak.cursor_time = (
-            start_pulse+window[0], start_pulse+window[1])
+        stf.peak.cursor_time = peakwindow
         stf.measure()
-        ipeaks.append(stf.peak.value)
+        if basewindow is not None:
+            ipeaks.append(stf.peak.value-stf.base.value)
+        else:
+            ipeaks.append(stf.peak.value)
 
         # Measure pulse amplitude
         stf.set_channel(1)
@@ -140,7 +227,7 @@ def iv(window, erev, peakmode="up"):
 
         stf.set_peak_direction("up")
         stf.set_peak_mean(-1)
-        stf.peak.cursor_time = (end_pulse-20.0, end_pulse-10.0)
+        stf.peak.cursor_time = pulsewindow
         stf.measure()
         v_commands.append(stf.peak.value)
 
