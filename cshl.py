@@ -67,7 +67,8 @@ def fboltz_up(p, x):
 
     Returns
     -------
-    y : :math:`y = 1 - \\frac{1}{1 + e^\\left(x-p_0\\right)/p_1}`
+    y : numpy.ndarray
+        :math:`= 1 - \\frac{1}{1 + e^\\left(x-p_0\\right)/p_1}`
     """
     return 1.0 - 1.0/(1.0+np.exp((x-p[0])/p[1]))
 
