@@ -104,7 +104,7 @@ def gv(i, v, erev):
     return g, gfit
 
 
-def timeconstants(fitwindow, pulsewindow):
+def timeconstants(fitwindow, pulsewindow, ichannel=0, vchannel=1):
     """
     Compute and plot decay time constants
 
@@ -114,6 +114,10 @@ def timeconstants(fitwindow, pulsewindow):
         Window for fitting time constant (time in ms from beginning of sweep)
     pulsewindow -- (float, float)
         Window for voltage pulse measurement (time in ms from beginning of sweep)
+    ichannel -- int, optional
+        current channel number. Default: 0
+    vchannel -- int, optional
+        voltage channel number. Default: 1
 
     Returns
     =======
@@ -147,7 +151,7 @@ def timeconstants(fitwindow, pulsewindow):
         fig, gs[3:, :4], hasx=False, hasy=False, sharex=ax_currents)
     for ntrace in range(stf.get_size_channel()):
         stf.set_trace(ntrace)
-        stf.set_channel(0)
+        stf.set_channel(ichannel)
         trace = stf.get_trace()
 
         ax_currents.plot(np.arange(len(trace))*dt, trace)
@@ -157,7 +161,7 @@ def timeconstants(fitwindow, pulsewindow):
         taus.append(res['Tau_0'])
 
         # Measure pulse amplitude
-        stf.set_channel(1)
+        stf.set_channel(vchannel)
         trace = stf.get_trace()
         ax_voltages.plot(np.arange(len(trace))*dt, trace)
 
@@ -168,34 +172,37 @@ def timeconstants(fitwindow, pulsewindow):
         v_commands.append(stf.peak.value)
 
     stfio_plot.plot_scalebars(
-        ax_currents, xunits=stf.get_xunits(), yunits=stf.get_yunits(channel=0))
+        ax_currents, xunits=stf.get_xunits(),
+        yunits=stf.get_yunits(channel=ichannel))
     stfio_plot.plot_scalebars(
-        ax_voltages, xunits=stf.get_xunits(), yunits=stf.get_yunits(channel=1))
+        ax_voltages, xunits=stf.get_xunits(),
+        yunits=stf.get_yunits(channel=vchannel))
 
     v_commands = np.array(v_commands)
     taus = np.array(taus)
 
     ax_taus = plot_iv(
         taus, v_commands, "ms",
-        stf.get_yunits(channel=1), fig, 122)
-    
+        stf.get_yunits(channel=vchannel), fig, 122)
+
     # Reset peak computation to single sampling point
     stf.set_peak_mean(1)
 
     # Reset active channel
-    stf.set_channel(0)
+    stf.set_channel(ichannel)
 
     # Compute conductances:
     stf.show_table_dictlist({
         "Voltage ({0})".format(
-            stf.get_yunits(channel=1)): v_commands.tolist(),
+            stf.get_yunits(channel=vchannel)): v_commands.tolist(),
         "Taus (ms)": taus.tolist(),
     })
 
     return v_commands, taus
 
     
-def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up"):
+def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up",
+       ichannel=0, vchannel=1):
     """
     Compute and plot an IV curve for currents
 
@@ -212,6 +219,10 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up"):
         Default: None
     peakmode -- string, optional
         Peak direction - one of "up", "down", "both" or "mean". Default: "up"
+    ichannel -- int, optional
+        current channel number. Default: 0
+    vchannel -- int, optional
+        voltage channel number. Default: 1
 
     Returns
     =======
@@ -251,7 +262,7 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up"):
         fig, gs[3:, :4], hasx=False, hasy=False, sharex=ax_currents)
     for ntrace in range(stf.get_size_channel()):
         stf.set_trace(ntrace)
-        stf.set_channel(0)
+        stf.set_channel(ichannel)
         trace = stf.get_trace()
 
         ax_currents.plot(np.arange(len(trace))*dt, trace)
@@ -273,7 +284,7 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up"):
             ipeaks.append(stf.peak.value)
 
         # Measure pulse amplitude
-        stf.set_channel(1)
+        stf.set_channel(vchannel)
         trace = stf.get_trace()
         ax_voltages.plot(np.arange(len(trace))*dt, trace)
 
@@ -310,34 +321,34 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up"):
     stf.set_peak_mean(1)
 
     # Reset active channel
-    stf.set_channel(0)
+    stf.set_channel(ichannel)
 
     # Compute conductances:
     gpeaks, g_fit = gv(ipeaks, v_commands, erev)
 
     ax_ipeaks = plot_iv(
-        ipeaks, v_commands, stf.get_yunits(channel=0),
+        ipeaks, v_commands, stf.get_yunits(channel=ichannel),
         stf.get_yunits(channel=1), fig, 222)
 
     ax_ipeaks.set_title("Peak current")
 
     ax_gpeaks = plot_gv(
-        gpeaks, v_commands, stf.get_yunits(channel=1),
+        gpeaks, v_commands, stf.get_yunits(channel=vchannel),
         g_fit, fig, 224)
     ax_gpeaks.set_title("Peak conductance")
 
     stf.show_table_dictlist({
         "Voltage ({0})".format(
-            stf.get_yunits(channel=1)): v_commands.tolist(),
+            stf.get_yunits(channel=vchannel)): v_commands.tolist(),
         "Peak current ({0})".format(
-            stf.get_yunits(channel=0)): ipeaks.tolist(),
+            stf.get_yunits(channel=ichannel)): ipeaks.tolist(),
         "Peak conductance (g/g_max)": gpeaks.tolist(),
     })
 
     return v_commands, ipeaks, gpeaks, g_fit
 
 
-def fi(pulsewindow, vthreshold):
+def fi(pulsewindow, vthreshold, vchannel=0, ichannel=1):
     """
     Compute and plot an f-I curve for current clamp recordings
 
@@ -347,6 +358,10 @@ def fi(pulsewindow, vthreshold):
         Window for current pulse measurement (time in ms from beginning of sweep)
     vthreshold -- float
         Voltage threshold of action potentials
+    vchannel -- int, optional
+        voltage channel number. Default: 0
+    ichannel -- int, optional
+        current channel number. Default: 1
 
     Returns
     =======
