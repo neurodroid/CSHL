@@ -1,0 +1,459 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>cshl &mdash; CSHL 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="CSHL 0.1.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for cshl</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">leastsq</span>
+
+<span class="kn">from</span> <span class="nn">mpl_toolkits.axes_grid.axislines</span> <span class="kn">import</span> <span class="n">SubplotZero</span><span class="p">,</span> <span class="n">Subplot</span>
+<span class="kn">import</span> <span class="nn">matplotlib.gridspec</span> <span class="kn">as</span> <span class="nn">gridspec</span>
+
+<span class="kn">from</span> <span class="nn">stfio</span> <span class="kn">import</span> <span class="n">plot</span> <span class="k">as</span> <span class="n">stfio_plot</span>
+
+
+<span class="k">class</span> <span class="nc">ZeroAxis</span><span class="p">(</span><span class="n">Subplot</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;frameon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">False</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">ZeroAxis</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">add_axes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">direction</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;right&quot;</span><span class="p">,</span> <span class="s2">&quot;top&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="n">direction</span><span class="p">]</span><span class="o">.</span><span class="n">set_visible</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+           
+
+<span class="k">def</span> <span class="nf">plot_iv</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">iunits</span><span class="p">,</span> <span class="n">vunits</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">subplot</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">ZeroAxis</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">subplot</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">sharex</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">mec</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_position</span><span class="p">(</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;bottom&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_position</span><span class="p">(</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;$V$ ({0})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vunits</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;$I$ ({0})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">iunits</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">ax</span>
+
+
+<span class="k">def</span> <span class="nf">plot_gv</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">vunits</span><span class="p">,</span> <span class="n">gfit</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">subplot</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">ZeroAxis</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">subplot</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">sharex</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="s1">&#39;o&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">,</span> <span class="n">ms</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">mec</span><span class="o">=</span><span class="s1">&#39;none&#39;</span><span class="p">)</span>
+    <span class="n">xfit</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">min</span><span class="p">(),</span> <span class="n">v</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">xfit</span><span class="p">,</span> <span class="n">fboltz_up</span><span class="p">(</span><span class="n">gfit</span><span class="p">,</span> <span class="n">xfit</span><span class="p">),</span> <span class="s1">&#39;-k&#39;</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;left&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_position</span><span class="p">(</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">spines</span><span class="p">[</span><span class="s1">&#39;bottom&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">set_position</span><span class="p">(</span><span class="s1">&#39;center&#39;</span><span class="p">)</span>
+
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;$V$ ({0})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">vunits</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;$g/g_{max}$&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ax</span>
+
+
+<span class="k">def</span> <span class="nf">leastsq_helper</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lsfunc</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">y</span> <span class="o">-</span> <span class="n">lsfunc</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="fboltz_up"><a class="viewcode-back" href="../index.html#cshl.fboltz_up">[docs]</a><span class="k">def</span> <span class="nf">fboltz_up</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Boltzmann function (upwards from 0 to 1)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    p : numpy.ndarray</span>
+<span class="sd">        :math:`p_0`, location of half maximum; :math:`p_1`, slope</span>
+<span class="sd">    x : numpy.ndarray</span>
+<span class="sd">        Dependent variable</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y : :math:`y = 1 - \\frac{1}{1 + e^\\left(x-p_0\\right)/p_1}`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="mf">1.0</span><span class="o">+</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="gv"><a class="viewcode-back" href="../index.html#cshl.gv">[docs]</a><span class="k">def</span> <span class="nf">gv</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">erev</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fit Boltzmann function to normalized conductance values</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    i : numpy.ndarray</span>
+<span class="sd">        Peak current values</span>
+<span class="sd">    v : numpy.ndarray</span>
+<span class="sd">        Command voltages</span>
+<span class="sd">    erev : float</span>
+<span class="sd">        Reversal potential</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    g : numpy.ndarray</span>
+<span class="sd">        Normalized conductances</span>
+<span class="sd">    gfit : numpy.ndarray</span>
+<span class="sd">        Half-maximal voltage and slope of best-fit Boltzmann function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">i</span> <span class="o">/</span> <span class="p">(</span><span class="n">v</span><span class="o">-</span><span class="n">erev</span><span class="p">)</span>
+    <span class="n">g</span> <span class="o">/=</span> <span class="n">g</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+
+    <span class="n">v50_init</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">slope_init</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">gfit</span> <span class="o">=</span> <span class="n">leastsq</span><span class="p">(</span>
+        <span class="n">leastsq_helper</span><span class="p">,</span> <span class="p">(</span><span class="n">v50_init</span><span class="p">,</span> <span class="n">slope_init</span><span class="p">),</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">fboltz_up</span><span class="p">,</span> <span class="n">v</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">g</span><span class="p">,</span> <span class="n">gfit</span></div>
+
+
+<div class="viewcode-block" id="timeconstants"><a class="viewcode-back" href="../index.html#cshl.timeconstants">[docs]</a><span class="k">def</span> <span class="nf">timeconstants</span><span class="p">(</span><span class="n">fitwindow</span><span class="p">,</span> <span class="n">pulsewindow</span><span class="p">,</span> <span class="n">ichannel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vchannel</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute and plot decay time constants</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    fitwindow : (float, float)</span>
+<span class="sd">        Window for fitting time constant (time in ms from beginning of sweep)</span>
+<span class="sd">    pulsewindow : (float, float)</span>
+<span class="sd">        Window for voltage pulse measurement (time in ms from beginning of sweep)</span>
+<span class="sd">    ichannel : int, optional</span>
+<span class="sd">        current channel number. Default: 0</span>
+<span class="sd">    vchannel : int, optional</span>
+<span class="sd">        voltage channel number. Default: 1</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    v_commands : numpy.ndarray</span>
+<span class="sd">        Command voltages</span>
+<span class="sd">    taus : numpy.ndarray</span>
+<span class="sd">        Time constants</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">stf</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">stf</span><span class="o">.</span><span class="n">check_doc</span><span class="p">():</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="n">nchannels</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_size_recording</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">nchannels</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="s2">&quot;Function requires 2 channels (0: current; 1: voltage)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_sampling_interval</span><span class="p">()</span>
+
+    <span class="n">v_commands</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">taus</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">mpl_panel</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span><span class="o">.</span><span class="n">fig</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="n">gs</span> <span class="o">=</span> <span class="n">gridspec</span><span class="o">.</span><span class="n">GridSpec</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="n">ax_currents</span> <span class="o">=</span> <span class="n">stfio_plot</span><span class="o">.</span><span class="n">StandardAxis</span><span class="p">(</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">gs</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">hasx</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">hasy</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">ax_voltages</span> <span class="o">=</span> <span class="n">stfio_plot</span><span class="o">.</span><span class="n">StandardAxis</span><span class="p">(</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">gs</span><span class="p">[</span><span class="mi">3</span><span class="p">:,</span> <span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">hasx</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">hasy</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax_currents</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ntrace</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">stf</span><span class="o">.</span><span class="n">get_size_channel</span><span class="p">()):</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">set_trace</span><span class="p">(</span><span class="n">ntrace</span><span class="p">)</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">set_channel</span><span class="p">(</span><span class="n">ichannel</span><span class="p">)</span>
+        <span class="n">trace</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_trace</span><span class="p">()</span>
+
+        <span class="n">ax_currents</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trace</span><span class="p">))</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">trace</span><span class="p">)</span>
+
+        <span class="n">stf</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">cursor_time</span> <span class="o">=</span> <span class="n">fitwindow</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">leastsq</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+        <span class="n">taus</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;Tau_0&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Measure pulse amplitude</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">set_channel</span><span class="p">(</span><span class="n">vchannel</span><span class="p">)</span>
+        <span class="n">trace</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_trace</span><span class="p">()</span>
+        <span class="n">ax_voltages</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trace</span><span class="p">))</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">trace</span><span class="p">)</span>
+
+        <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_direction</span><span class="p">(</span><span class="s2">&quot;up&quot;</span><span class="p">)</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">cursor_time</span> <span class="o">=</span> <span class="n">pulsewindow</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">measure</span><span class="p">()</span>
+        <span class="n">v_commands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stf</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="n">stfio_plot</span><span class="o">.</span><span class="n">plot_scalebars</span><span class="p">(</span>
+        <span class="n">ax_currents</span><span class="p">,</span> <span class="n">xunits</span><span class="o">=</span><span class="n">stf</span><span class="o">.</span><span class="n">get_xunits</span><span class="p">(),</span>
+        <span class="n">yunits</span><span class="o">=</span><span class="n">stf</span><span class="o">.</span><span class="n">get_yunits</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="n">ichannel</span><span class="p">))</span>
+    <span class="n">stfio_plot</span><span class="o">.</span><span class="n">plot_scalebars</span><span class="p">(</span>
+        <span class="n">ax_voltages</span><span class="p">,</span> <span class="n">xunits</span><span class="o">=</span><span class="n">stf</span><span class="o">.</span><span class="n">get_xunits</span><span class="p">(),</span>
+        <span class="n">yunits</span><span class="o">=</span><span class="n">stf</span><span class="o">.</span><span class="n">get_yunits</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="n">vchannel</span><span class="p">))</span>
+
+    <span class="n">v_commands</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">v_commands</span><span class="p">)</span>
+    <span class="n">taus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">taus</span><span class="p">)</span>
+
+    <span class="n">ax_taus</span> <span class="o">=</span> <span class="n">plot_iv</span><span class="p">(</span>
+        <span class="n">taus</span><span class="p">,</span> <span class="n">v_commands</span><span class="p">,</span> <span class="s2">&quot;ms&quot;</span><span class="p">,</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">get_yunits</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="n">vchannel</span><span class="p">),</span> <span class="n">fig</span><span class="p">,</span> <span class="mi">122</span><span class="p">)</span>
+
+    <span class="c1"># Reset peak computation to single sampling point</span>
+    <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Reset active channel</span>
+    <span class="n">stf</span><span class="o">.</span><span class="n">set_channel</span><span class="p">(</span><span class="n">ichannel</span><span class="p">)</span>
+
+    <span class="c1"># Compute conductances:</span>
+    <span class="n">stf</span><span class="o">.</span><span class="n">show_table_dictlist</span><span class="p">({</span>
+        <span class="s2">&quot;Voltage ({0})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">stf</span><span class="o">.</span><span class="n">get_yunits</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="n">vchannel</span><span class="p">)):</span> <span class="n">v_commands</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="s2">&quot;Taus (ms)&quot;</span><span class="p">:</span> <span class="n">taus</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+    <span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">v_commands</span><span class="p">,</span> <span class="n">taus</span></div>
+
+    
+<div class="viewcode-block" id="iv"><a class="viewcode-back" href="../index.html#cshl.iv">[docs]</a><span class="k">def</span> <span class="nf">iv</span><span class="p">(</span><span class="n">peakwindow</span><span class="p">,</span> <span class="n">basewindow</span><span class="p">,</span> <span class="n">pulsewindow</span><span class="p">,</span> <span class="n">erev</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">peakmode</span><span class="o">=</span><span class="s2">&quot;up&quot;</span><span class="p">,</span>
+       <span class="n">ichannel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vchannel</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute and plot an IV curve for currents</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    peakwindow : (float, float)</span>
+<span class="sd">        Window for peak measurement (time in ms from beginning of sweep)</span>
+<span class="sd">    basewindow : (float, float)</span>
+<span class="sd">        Window for baseline measurement (time in ms from beginning of sweep)</span>
+<span class="sd">    pulsewindow : (float, float)</span>
+<span class="sd">        Window for voltage pulse measurement (time in ms from beginning of sweep)</span>
+<span class="sd">    erev : float, optional</span>
+<span class="sd">        End of v clamp pulse in ms or None to determine automatically.</span>
+<span class="sd">        Default: None</span>
+<span class="sd">    peakmode : string, optional</span>
+<span class="sd">        Peak direction - one of &quot;up&quot;, &quot;down&quot;, &quot;both&quot; or &quot;mean&quot;. Default: &quot;up&quot;</span>
+<span class="sd">    ichannel : int, optional</span>
+<span class="sd">        current channel number. Default: 0</span>
+<span class="sd">    vchannel : int, optional</span>
+<span class="sd">        voltage channel number. Default: 1</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    v_commands : numpy.ndarray</span>
+<span class="sd">        Command voltages</span>
+<span class="sd">    ipeaks : numpy.ndarray</span>
+<span class="sd">        Peak currents</span>
+<span class="sd">    gpeaks : numpy.ndarray</span>
+<span class="sd">        Peak normalized conductances</span>
+<span class="sd">    g_fit : numpy.ndarray</span>
+<span class="sd">        Half-maximal voltage and slope of best-fit Boltzmann function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">stf</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">stf</span><span class="o">.</span><span class="n">check_doc</span><span class="p">():</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="n">nchannels</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_size_recording</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">nchannels</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="s2">&quot;Function requires 2 channels (0: current; 1: voltage)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_sampling_interval</span><span class="p">()</span>
+
+    <span class="n">v_commands</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">ipeaks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">basewindow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">cursor_time</span> <span class="o">=</span> <span class="n">basewindow</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">mpl_panel</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span><span class="o">.</span><span class="n">fig</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="n">gs</span> <span class="o">=</span> <span class="n">gridspec</span><span class="o">.</span><span class="n">GridSpec</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+    <span class="n">ax_currents</span> <span class="o">=</span> <span class="n">stfio_plot</span><span class="o">.</span><span class="n">StandardAxis</span><span class="p">(</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">gs</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">hasx</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">hasy</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">ax_voltages</span> <span class="o">=</span> <span class="n">stfio_plot</span><span class="o">.</span><span class="n">StandardAxis</span><span class="p">(</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">gs</span><span class="p">[</span><span class="mi">3</span><span class="p">:,</span> <span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">hasx</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">hasy</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax_currents</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ntrace</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">stf</span><span class="o">.</span><span class="n">get_size_channel</span><span class="p">()):</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">set_trace</span><span class="p">(</span><span class="n">ntrace</span><span class="p">)</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">set_channel</span><span class="p">(</span><span class="n">ichannel</span><span class="p">)</span>
+        <span class="n">trace</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_trace</span><span class="p">()</span>
+
+        <span class="n">ax_currents</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trace</span><span class="p">))</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">trace</span><span class="p">)</span>
+
+        <span class="c1"># Measure only downward peaks (inward currents)</span>
+        <span class="k">if</span> <span class="n">peakmode</span> <span class="ow">is</span> <span class="s2">&quot;mean&quot;</span><span class="p">:</span>
+            <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_direction</span><span class="p">(</span><span class="s2">&quot;up&quot;</span><span class="p">)</span>
+            <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_direction</span><span class="p">(</span><span class="n">peakmode</span><span class="p">)</span>
+            <span class="c1"># Set peak computation to single sampling point</span>
+            <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">stf</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">cursor_time</span> <span class="o">=</span> <span class="n">peakwindow</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">measure</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">basewindow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">ipeaks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stf</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">value</span><span class="o">-</span><span class="n">stf</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ipeaks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stf</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="c1"># Measure pulse amplitude</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">set_channel</span><span class="p">(</span><span class="n">vchannel</span><span class="p">)</span>
+        <span class="n">trace</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_trace</span><span class="p">()</span>
+        <span class="n">ax_voltages</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trace</span><span class="p">))</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">trace</span><span class="p">)</span>
+
+        <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_direction</span><span class="p">(</span><span class="s2">&quot;up&quot;</span><span class="p">)</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">cursor_time</span> <span class="o">=</span> <span class="n">pulsewindow</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">measure</span><span class="p">()</span>
+        <span class="n">v_commands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stf</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="n">stfio_plot</span><span class="o">.</span><span class="n">plot_scalebars</span><span class="p">(</span>
+        <span class="n">ax_currents</span><span class="p">,</span> <span class="n">xunits</span><span class="o">=</span><span class="n">stf</span><span class="o">.</span><span class="n">get_xunits</span><span class="p">(),</span> <span class="n">yunits</span><span class="o">=</span><span class="n">stf</span><span class="o">.</span><span class="n">get_yunits</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">stfio_plot</span><span class="o">.</span><span class="n">plot_scalebars</span><span class="p">(</span>
+        <span class="n">ax_voltages</span><span class="p">,</span> <span class="n">xunits</span><span class="o">=</span><span class="n">stf</span><span class="o">.</span><span class="n">get_xunits</span><span class="p">(),</span> <span class="n">yunits</span><span class="o">=</span><span class="n">stf</span><span class="o">.</span><span class="n">get_yunits</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+    <span class="n">v_commands</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">v_commands</span><span class="p">)</span>
+    <span class="n">ipeaks</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">ipeaks</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">erev</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="c1"># Find first zero crossing in ipeaks:</span>
+        <span class="k">for</span> <span class="n">npulse</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ipeaks</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">ipeaks</span><span class="p">[</span><span class="n">npulse</span><span class="p">])</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">ipeaks</span><span class="p">[</span><span class="n">npulse</span><span class="o">+</span><span class="mi">1</span><span class="p">]):</span>
+                <span class="c1"># linear interpolation</span>
+                <span class="n">m1</span> <span class="o">=</span> <span class="p">(</span><span class="n">ipeaks</span><span class="p">[</span><span class="n">npulse</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">ipeaks</span><span class="p">[</span><span class="n">npulse</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span>
+                    <span class="n">v_commands</span><span class="p">[</span><span class="n">npulse</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">v_commands</span><span class="p">[</span><span class="n">npulse</span><span class="p">])</span>
+                <span class="n">c1</span> <span class="o">=</span> <span class="n">ipeaks</span><span class="p">[</span><span class="n">npulse</span><span class="p">]</span> <span class="o">-</span> <span class="n">m1</span><span class="o">*</span><span class="n">v_commands</span><span class="p">[</span><span class="n">npulse</span><span class="p">]</span>
+                <span class="n">erev</span> <span class="o">=</span> <span class="o">-</span><span class="n">c1</span><span class="o">/</span><span class="n">m1</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="n">erev</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                <span class="s2">&quot;Could not determine reversal potential. Aborting now</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="c1"># Reset peak computation to single sampling point</span>
+    <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Reset active channel</span>
+    <span class="n">stf</span><span class="o">.</span><span class="n">set_channel</span><span class="p">(</span><span class="n">ichannel</span><span class="p">)</span>
+
+    <span class="c1"># Compute conductances:</span>
+    <span class="n">gpeaks</span><span class="p">,</span> <span class="n">g_fit</span> <span class="o">=</span> <span class="n">gv</span><span class="p">(</span><span class="n">ipeaks</span><span class="p">,</span> <span class="n">v_commands</span><span class="p">,</span> <span class="n">erev</span><span class="p">)</span>
+
+    <span class="n">ax_ipeaks</span> <span class="o">=</span> <span class="n">plot_iv</span><span class="p">(</span>
+        <span class="n">ipeaks</span><span class="p">,</span> <span class="n">v_commands</span><span class="p">,</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_yunits</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="n">ichannel</span><span class="p">),</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">get_yunits</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">fig</span><span class="p">,</span> <span class="mi">222</span><span class="p">)</span>
+
+    <span class="n">ax_ipeaks</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Peak current&quot;</span><span class="p">)</span>
+
+    <span class="n">ax_gpeaks</span> <span class="o">=</span> <span class="n">plot_gv</span><span class="p">(</span>
+        <span class="n">gpeaks</span><span class="p">,</span> <span class="n">v_commands</span><span class="p">,</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_yunits</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="n">vchannel</span><span class="p">),</span>
+        <span class="n">g_fit</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
+    <span class="n">ax_gpeaks</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Peak conductance&quot;</span><span class="p">)</span>
+
+    <span class="n">stf</span><span class="o">.</span><span class="n">show_table_dictlist</span><span class="p">({</span>
+        <span class="s2">&quot;Voltage ({0})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">stf</span><span class="o">.</span><span class="n">get_yunits</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="n">vchannel</span><span class="p">)):</span> <span class="n">v_commands</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="s2">&quot;Peak current ({0})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">stf</span><span class="o">.</span><span class="n">get_yunits</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="n">ichannel</span><span class="p">)):</span> <span class="n">ipeaks</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+        <span class="s2">&quot;Peak conductance (g/g_max)&quot;</span><span class="p">:</span> <span class="n">gpeaks</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
+    <span class="p">})</span>
+
+    <span class="k">return</span> <span class="n">v_commands</span><span class="p">,</span> <span class="n">ipeaks</span><span class="p">,</span> <span class="n">gpeaks</span><span class="p">,</span> <span class="n">g_fit</span></div>
+
+
+<div class="viewcode-block" id="fi"><a class="viewcode-back" href="../index.html#cshl.fi">[docs]</a><span class="k">def</span> <span class="nf">fi</span><span class="p">(</span><span class="n">pulsewindow</span><span class="p">,</span> <span class="n">vthreshold</span><span class="p">,</span> <span class="n">vchannel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ichannel</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute and plot an f-I curve for current clamp recordings</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pulsewindow : (float, float)</span>
+<span class="sd">        Window for current pulse measurement (time in ms from beginning of sweep)</span>
+<span class="sd">    vthreshold : float</span>
+<span class="sd">        Voltage threshold of action potentials</span>
+<span class="sd">    vchannel : int, optional</span>
+<span class="sd">        voltage channel number. Default: 0</span>
+<span class="sd">    ichannel : int, optional</span>
+<span class="sd">        current channel number. Default: 1</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    i_commands : numpy.ndarray</span>
+<span class="sd">        Command current pulses</span>
+<span class="sd">    f : numpy.ndarray</span>
+<span class="sd">        Action potential frequencies</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="bp">None</span>
+    <span class="n">i_commands</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">return</span> <span class="n">i_commands</span><span class="p">,</span> <span class="n">f</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Christoph Schmidt-Hieber.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
