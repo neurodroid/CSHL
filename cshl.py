@@ -73,6 +73,37 @@ def fboltz_up(p, x):
     return 1.0 - 1.0/(1.0+np.exp((x-p[0])/p[1]))
 
 
+def gv(i, v, erev):
+    """
+    Fit Boltzmann function to normalized conductance values
+
+    Parameters
+    ==========
+    i -- numpy.ndarray
+        Peak current values
+    v -- numpy.ndarray
+        Command voltages
+    erev -- float
+        Reversal potential
+
+    Returns
+    =======
+    g -- numpy.ndarray
+        Normalized conductances
+    gfit -- numpy.ndarray
+        Half-maximal voltage and slope of best-fit Boltzmann function
+    """
+    g = i / (v-erev)
+    g /= g.max()
+
+    v50_init = 0.0
+    slope_init = 1.0
+    gfit = leastsq(
+        leastsq_helper, (v50_init, slope_init), args=(g, fboltz_up, v))[0]
+
+    return g, gfit
+
+
 def timeconstants(fitwindow, pulsewindow):
     """
     Compute and plot decay time constants
@@ -80,10 +111,18 @@ def timeconstants(fitwindow, pulsewindow):
     Parameters
     ==========
     fitwindow -- (float, float)
-        Window for peak measurement (time in ms from beginning of sweep)
+        Window for fitting time constant (time in ms from beginning of sweep)
     pulsewindow -- (float, float)
         Window for voltage pulse measurement (time in ms from beginning of sweep)
+
+    Returns
+    =======
+    v_commands -- numpy.ndarray
+        Command voltages
+    taus -- numpy.ndarray
+        Time constants
     """
+
     import stf
     if not stf.check_doc():
         return None
@@ -173,7 +212,19 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up"):
         Default: None
     peakmode -- string, optional
         Peak direction - one of "up", "down", "both" or "mean". Default: "up"
+
+    Returns
+    =======
+    v_commands -- numpy.ndarray
+        Command voltages
+    ipeaks -- numpy.ndarray
+        Peak currents
+    gpeaks -- numpy.ndarray
+        Peak normalized conductances
+    g_fit -- numpy.ndarray
+        Half-maximal voltage and slope of best-fit Boltzmann function
     """
+
     import stf
     if not stf.check_doc():
         return None
@@ -286,18 +337,6 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up"):
     return v_commands, ipeaks, gpeaks, g_fit
 
 
-def gv(i, v, erev):
-    g = i / (v-erev)
-    g /= g.max()
-
-    v50_init = 0.0
-    slope_init = 1.0
-    gfit = leastsq(
-        leastsq_helper, (v50_init, slope_init), args=(g, fboltz_up, v))[0]
-
-    return g, gfit
-
-
 def fi(pulsewindow, vthreshold):
     """
     Compute and plot an f-I curve for current clamp recordings
@@ -308,6 +347,13 @@ def fi(pulsewindow, vthreshold):
         Window for current pulse measurement (time in ms from beginning of sweep)
     vthreshold -- float
         Voltage threshold of action potentials
+
+    Returns
+    =======
+    i_commands -- numpy.ndarray
+        Command current pulses
+    f -- numpy.ndarray
+        Action potential frequencies
     """
     f = None
     i_commands = None
