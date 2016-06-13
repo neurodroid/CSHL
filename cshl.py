@@ -156,7 +156,7 @@ def timeconstants(fitwindow, pulsewindow):
     return v_commands, taus
 
     
-def iv(peakwindow, basewindow, pulsewindow, erev, peakmode="up"):
+def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up"):
     """
     Compute and plot an IV curve for currents
 
@@ -238,6 +238,21 @@ def iv(peakwindow, basewindow, pulsewindow, erev, peakmode="up"):
 
     v_commands = np.array(v_commands)
     ipeaks = np.array(ipeaks)
+
+    if erev is None:
+        # Find first zero crossing in ipeaks:
+        for npulse in range(ipeaks.shape[0]-1):
+            if np.sign(ipeaks[npulse]) != np.sign(ipeaks[npulse+1]):
+                # linear interpolation
+                m1 = (ipeaks[npulse+1]-ipeaks[npulse]) / (
+                    v_commands[npulse+1]-v_commands[npulse])
+                c1 = ipeaks[npulse] - m1*v_commands[npulse]
+                erev = -c1/m1
+                break
+        if erev is None:
+            sys.stderr.write(
+                "Could not determine reversal potential. Aborting now\n")
+            return None
 
     # Reset peak computation to single sampling point
     stf.set_peak_mean(1)
