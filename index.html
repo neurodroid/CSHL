@@ -70,15 +70,16 @@
 
 <dl class="function">
 <dt id="cshl.fi">
-<code class="descclassname">cshl.</code><code class="descname">fi</code><span class="sig-paren">(</span><em>pulsewindow</em>, <em>vthreshold</em>, <em>vchannel=0</em>, <em>ichannel=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cshl.html#fi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cshl.fi" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">cshl.</code><code class="descname">fi</code><span class="sig-paren">(</span><em>pulsewindow=None</em>, <em>vthreshold=-45.0</em>, <em>vchannel=0</em>, <em>ichannel=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cshl.html#fi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cshl.fi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute and plot an f-I curve for current clamp recordings</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>pulsewindow</strong> (<em>(float, float)</em>) &#8211; Window for current pulse measurement (time in ms from beginning of sweep)</li>
-<li><strong>vthreshold</strong> (<em>float</em>) &#8211; Voltage threshold of action potentials</li>
+<li><strong>pulsewindow</strong> (<em>(float, float), optional</em>) &#8211; Window for current pulse measurement (time in ms from beginning of sweep)
+None for current cursor settings. Default: None</li>
+<li><strong>vthreshold</strong> (<em>float, optional</em>) &#8211; Voltage threshold of action potentials. Default: -45.0</li>
 <li><strong>vchannel</strong> (<em>int, optional</em>) &#8211; voltage channel number. Default: 0</li>
 <li><strong>ichannel</strong> (<em>int, optional</em>) &#8211; current channel number. Default: 1</li>
 </ul>
@@ -123,16 +124,19 @@
 
 <dl class="function">
 <dt id="cshl.iv">
-<code class="descclassname">cshl.</code><code class="descname">iv</code><span class="sig-paren">(</span><em>peakwindow</em>, <em>basewindow</em>, <em>pulsewindow</em>, <em>erev=None</em>, <em>peakmode='up'</em>, <em>ichannel=0</em>, <em>vchannel=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cshl.html#iv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cshl.iv" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">cshl.</code><code class="descname">iv</code><span class="sig-paren">(</span><em>peakwindow=None</em>, <em>basewindow=None</em>, <em>pulsewindow=None</em>, <em>erev=None</em>, <em>peakmode='both'</em>, <em>ichannel=0</em>, <em>vchannel=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cshl.html#iv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cshl.iv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Compute and plot an IV curve for currents</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>peakwindow</strong> (<em>(float, float)</em>) &#8211; Window for peak measurement (time in ms from beginning of sweep)</li>
-<li><strong>basewindow</strong> (<em>(float, float)</em>) &#8211; Window for baseline measurement (time in ms from beginning of sweep)</li>
-<li><strong>pulsewindow</strong> (<em>(float, float)</em>) &#8211; Window for voltage pulse measurement (time in ms from beginning of sweep)</li>
+<li><strong>peakwindow</strong> (<em>(float, float), optional</em>) &#8211; Window for peak measurement (time in ms from beginning of sweep)
+None for current cursor settings. Default: None</li>
+<li><strong>basewindow</strong> (<em>(float, float), optional</em>) &#8211; Window for baseline measurement (time in ms from beginning of sweep)
+None for current cursor settings. Default: None</li>
+<li><strong>pulsewindow</strong> (<em>(float, float), optional</em>) &#8211; Window for voltage pulse measurement (time in ms from beginning of sweep)
+None for current cursor settings. Default: None</li>
 <li><strong>erev</strong> (<em>float, optional</em>) &#8211; End of v clamp pulse in ms or None to determine automatically.
 Default: None</li>
 <li><strong>peakmode</strong> (<em>string, optional</em>) &#8211; Peak direction - one of &#8220;up&#8221;, &#8220;down&#8221;, &#8220;both&#8221; or &#8220;mean&#8221;. Default: &#8220;up&#8221;</li>
@@ -163,8 +167,10 @@ Default: None</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fitwindow</strong> (<em>(float, float)</em>) &#8211; Window for fitting time constant (time in ms from beginning of sweep)</li>
-<li><strong>pulsewindow</strong> (<em>(float, float)</em>) &#8211; Window for voltage pulse measurement (time in ms from beginning of sweep)</li>
+<li><strong>fitwindow</strong> (<em>(float, float), optional</em>) &#8211; Window for fitting time constant (time in ms from beginning of sweep)
+None for current cursor settings. Default: None</li>
+<li><strong>pulsewindow</strong> (<em>(float, float), optional</em>) &#8211; Window for voltage pulse measurement (time in ms from beginning of sweep)
+None for current cursor settings. Default: None</li>
 <li><strong>ichannel</strong> (<em>int, optional</em>) &#8211; current channel number. Default: 0</li>
 <li><strong>vchannel</strong> (<em>int, optional</em>) &#8211; voltage channel number. Default: 1</li>
 </ul>

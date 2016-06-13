@@ -151,10 +151,12 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    fitwindow : (float, float)</span>
+<span class="sd">    fitwindow : (float, float), optional</span>
 <span class="sd">        Window for fitting time constant (time in ms from beginning of sweep)</span>
-<span class="sd">    pulsewindow : (float, float)</span>
+<span class="sd">        None for current cursor settings. Default: None</span>
+<span class="sd">    pulsewindow : (float, float), optional</span>
 <span class="sd">        Window for voltage pulse measurement (time in ms from beginning of sweep)</span>
+<span class="sd">        None for current cursor settings. Default: None</span>
 <span class="sd">    ichannel : int, optional</span>
 <span class="sd">        current channel number. Default: 0</span>
 <span class="sd">    vchannel : int, optional</span>
@@ -197,7 +199,8 @@
 
         <span class="n">ax_currents</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trace</span><span class="p">))</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">trace</span><span class="p">)</span>
 
-        <span class="n">stf</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">cursor_time</span> <span class="o">=</span> <span class="n">fitwindow</span>
+        <span class="k">if</span> <span class="n">fitwindow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">stf</span><span class="o">.</span><span class="n">fit</span><span class="o">.</span><span class="n">cursor_time</span> <span class="o">=</span> <span class="n">fitwindow</span>
         <span class="n">res</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">leastsq</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
         <span class="n">taus</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">res</span><span class="p">[</span><span class="s1">&#39;Tau_0&#39;</span><span class="p">])</span>
 
@@ -208,7 +211,8 @@
 
         <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_direction</span><span class="p">(</span><span class="s2">&quot;up&quot;</span><span class="p">)</span>
         <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">stf</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">cursor_time</span> <span class="o">=</span> <span class="n">pulsewindow</span>
+        <span class="k">if</span> <span class="n">pulsewindow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">stf</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">cursor_time</span> <span class="o">=</span> <span class="n">pulsewindow</span>
         <span class="n">stf</span><span class="o">.</span><span class="n">measure</span><span class="p">()</span>
         <span class="n">v_commands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stf</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
@@ -242,19 +246,22 @@
     <span class="k">return</span> <span class="n">v_commands</span><span class="p">,</span> <span class="n">taus</span></div>
 
     
-<div class="viewcode-block" id="iv"><a class="viewcode-back" href="../index.html#cshl.iv">[docs]</a><span class="k">def</span> <span class="nf">iv</span><span class="p">(</span><span class="n">peakwindow</span><span class="p">,</span> <span class="n">basewindow</span><span class="p">,</span> <span class="n">pulsewindow</span><span class="p">,</span> <span class="n">erev</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">peakmode</span><span class="o">=</span><span class="s2">&quot;up&quot;</span><span class="p">,</span>
-       <span class="n">ichannel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vchannel</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="iv"><a class="viewcode-back" href="../index.html#cshl.iv">[docs]</a><span class="k">def</span> <span class="nf">iv</span><span class="p">(</span><span class="n">peakwindow</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">basewindow</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">pulsewindow</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+       <span class="n">erev</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">peakmode</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">ichannel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vchannel</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute and plot an IV curve for currents</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    peakwindow : (float, float)</span>
+<span class="sd">    peakwindow : (float, float), optional</span>
 <span class="sd">        Window for peak measurement (time in ms from beginning of sweep)</span>
-<span class="sd">    basewindow : (float, float)</span>
+<span class="sd">        None for current cursor settings. Default: None</span>
+<span class="sd">    basewindow : (float, float), optional</span>
 <span class="sd">        Window for baseline measurement (time in ms from beginning of sweep)</span>
-<span class="sd">    pulsewindow : (float, float)</span>
+<span class="sd">        None for current cursor settings. Default: None</span>
+<span class="sd">    pulsewindow : (float, float), optional</span>
 <span class="sd">        Window for voltage pulse measurement (time in ms from beginning of sweep)</span>
+<span class="sd">        None for current cursor settings. Default: None</span>
 <span class="sd">    erev : float, optional</span>
 <span class="sd">        End of v clamp pulse in ms or None to determine automatically.</span>
 <span class="sd">        Default: None</span>
@@ -288,6 +295,7 @@
         <span class="k">return</span>
 
     <span class="n">dt</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_sampling_interval</span><span class="p">()</span>
+    <span class="n">olddirection</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_peak_direction</span><span class="p">()</span>
 
     <span class="n">v_commands</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">ipeaks</span> <span class="o">=</span> <span class="p">[]</span>
@@ -317,7 +325,8 @@
             <span class="c1"># Set peak computation to single sampling point</span>
             <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-        <span class="n">stf</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">cursor_time</span> <span class="o">=</span> <span class="n">peakwindow</span>
+        <span class="k">if</span> <span class="n">peakwindow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">stf</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">cursor_time</span> <span class="o">=</span> <span class="n">peakwindow</span>
         <span class="n">stf</span><span class="o">.</span><span class="n">measure</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">basewindow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="n">ipeaks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stf</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">value</span><span class="o">-</span><span class="n">stf</span><span class="o">.</span><span class="n">base</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
@@ -331,7 +340,8 @@
 
         <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_direction</span><span class="p">(</span><span class="s2">&quot;up&quot;</span><span class="p">)</span>
         <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_mean</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-        <span class="n">stf</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">cursor_time</span> <span class="o">=</span> <span class="n">pulsewindow</span>
+        <span class="k">if</span> <span class="n">pulsewindow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">stf</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">cursor_time</span> <span class="o">=</span> <span class="n">pulsewindow</span>
         <span class="n">stf</span><span class="o">.</span><span class="n">measure</span><span class="p">()</span>
         <span class="n">v_commands</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stf</span><span class="o">.</span><span class="n">peak</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
 
@@ -360,6 +370,7 @@
 
     <span class="c1"># Reset peak computation to single sampling point</span>
     <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_mean</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">stf</span><span class="o">.</span><span class="n">set_peak_direction</span><span class="p">(</span><span class="n">olddirection</span><span class="p">)</span>
 
     <span class="c1"># Reset active channel</span>
     <span class="n">stf</span><span class="o">.</span><span class="n">set_channel</span><span class="p">(</span><span class="n">ichannel</span><span class="p">)</span>
@@ -389,16 +400,17 @@
     <span class="k">return</span> <span class="n">v_commands</span><span class="p">,</span> <span class="n">ipeaks</span><span class="p">,</span> <span class="n">gpeaks</span><span class="p">,</span> <span class="n">g_fit</span></div>
 
 
-<div class="viewcode-block" id="fi"><a class="viewcode-back" href="../index.html#cshl.fi">[docs]</a><span class="k">def</span> <span class="nf">fi</span><span class="p">(</span><span class="n">pulsewindow</span><span class="p">,</span> <span class="n">vthreshold</span><span class="p">,</span> <span class="n">vchannel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ichannel</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="fi"><a class="viewcode-back" href="../index.html#cshl.fi">[docs]</a><span class="k">def</span> <span class="nf">fi</span><span class="p">(</span><span class="n">pulsewindow</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">vthreshold</span><span class="o">=-</span><span class="mf">45.0</span><span class="p">,</span> <span class="n">vchannel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ichannel</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute and plot an f-I curve for current clamp recordings</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    pulsewindow : (float, float)</span>
+<span class="sd">    pulsewindow : (float, float), optional</span>
 <span class="sd">        Window for current pulse measurement (time in ms from beginning of sweep)</span>
-<span class="sd">    vthreshold : float</span>
-<span class="sd">        Voltage threshold of action potentials</span>
+<span class="sd">        None for current cursor settings. Default: None</span>
+<span class="sd">    vthreshold : float, optional</span>
+<span class="sd">        Voltage threshold of action potentials. Default: -45.0</span>
 <span class="sd">    vchannel : int, optional</span>
 <span class="sd">        voltage channel number. Default: 0</span>
 <span class="sd">    ichannel : int, optional</span>
