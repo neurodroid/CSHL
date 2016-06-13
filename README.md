@@ -28,6 +28,13 @@
      cd ~/CSHL
      git pull
      ```
+  
+  6. To update stimfit:
+  
+     ```bash
+     sudo port selfupdate
+     sudo port upgrade -u outdated
+     ```
 
 ### Windows
 
@@ -36,3 +43,5 @@
   2. [Download the script](https://github.com/neurodroid/CSHL/raw/master/cshl.py) directly to `C:\Python27\Lib\site-packages`
    
   3. Repeat step 2 whenever there's been a change to the script
+
+  4. To update stimfit, repeat step 1, but there's no need to re-install Python during the installation procedure.
