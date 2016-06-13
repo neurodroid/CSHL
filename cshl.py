@@ -59,16 +59,15 @@ def fboltz_up(p, x):
     Boltzmann function (upwards from 0 to 1)
 
     Parameters
-    ==========
-    p -- numpy.ndarray
-        p[0]: location of half maximum
-        p[1]: slope
-    x -- numpy.ndarray
+    ----------
+    p : numpy.ndarray
+        :math:`p_0`, location of half maximum; :math:`p_1`, slope
+    x : numpy.ndarray
         Dependent variable
 
     Returns
-    =======
-    $y = 1 - \frac{1}{1 + e^{x-p_0}/p_1}
+    -------
+    y : :math:`y = 1 - \\frac{1}{1 + e^\\left(x-p_0\\right)/p_1}`
     """
     return 1.0 - 1.0/(1.0+np.exp((x-p[0])/p[1]))
 
@@ -78,19 +77,19 @@ def gv(i, v, erev):
     Fit Boltzmann function to normalized conductance values
 
     Parameters
-    ==========
-    i -- numpy.ndarray
+    ----------
+    i : numpy.ndarray
         Peak current values
-    v -- numpy.ndarray
+    v : numpy.ndarray
         Command voltages
-    erev -- float
+    erev : float
         Reversal potential
 
     Returns
-    =======
-    g -- numpy.ndarray
+    -------
+    g : numpy.ndarray
         Normalized conductances
-    gfit -- numpy.ndarray
+    gfit : numpy.ndarray
         Half-maximal voltage and slope of best-fit Boltzmann function
     """
     g = i / (v-erev)
@@ -109,21 +108,21 @@ def timeconstants(fitwindow, pulsewindow, ichannel=0, vchannel=1):
     Compute and plot decay time constants
 
     Parameters
-    ==========
-    fitwindow -- (float, float)
+    ----------
+    fitwindow : (float, float)
         Window for fitting time constant (time in ms from beginning of sweep)
-    pulsewindow -- (float, float)
+    pulsewindow : (float, float)
         Window for voltage pulse measurement (time in ms from beginning of sweep)
-    ichannel -- int, optional
+    ichannel : int, optional
         current channel number. Default: 0
-    vchannel -- int, optional
+    vchannel : int, optional
         voltage channel number. Default: 1
 
     Returns
-    =======
-    v_commands -- numpy.ndarray
+    -------
+    v_commands : numpy.ndarray
         Command voltages
-    taus -- numpy.ndarray
+    taus : numpy.ndarray
         Time constants
     """
 
@@ -207,32 +206,32 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up",
     Compute and plot an IV curve for currents
 
     Parameters
-    ==========
-    peakwindow -- (float, float)
+    ----------
+    peakwindow : (float, float)
         Window for peak measurement (time in ms from beginning of sweep)
-    basewindow -- (float, float)
+    basewindow : (float, float)
         Window for baseline measurement (time in ms from beginning of sweep)
-    pulsewindow -- (float, float)
+    pulsewindow : (float, float)
         Window for voltage pulse measurement (time in ms from beginning of sweep)
-    erev -- float, optional
+    erev : float, optional
         End of v clamp pulse in ms or None to determine automatically.
         Default: None
-    peakmode -- string, optional
+    peakmode : string, optional
         Peak direction - one of "up", "down", "both" or "mean". Default: "up"
-    ichannel -- int, optional
+    ichannel : int, optional
         current channel number. Default: 0
-    vchannel -- int, optional
+    vchannel : int, optional
         voltage channel number. Default: 1
 
     Returns
-    =======
-    v_commands -- numpy.ndarray
+    -------
+    v_commands : numpy.ndarray
         Command voltages
-    ipeaks -- numpy.ndarray
+    ipeaks : numpy.ndarray
         Peak currents
-    gpeaks -- numpy.ndarray
+    gpeaks : numpy.ndarray
         Peak normalized conductances
-    g_fit -- numpy.ndarray
+    g_fit : numpy.ndarray
         Half-maximal voltage and slope of best-fit Boltzmann function
     """
 
@@ -353,21 +352,21 @@ def fi(pulsewindow, vthreshold, vchannel=0, ichannel=1):
     Compute and plot an f-I curve for current clamp recordings
 
     Parameters
-    ==========
-    pulsewindow -- (float, float)
+    ----------
+    pulsewindow : (float, float)
         Window for current pulse measurement (time in ms from beginning of sweep)
-    vthreshold -- float
+    vthreshold : float
         Voltage threshold of action potentials
-    vchannel -- int, optional
+    vchannel : int, optional
         voltage channel number. Default: 0
-    ichannel -- int, optional
+    ichannel : int, optional
         current channel number. Default: 1
 
     Returns
-    =======
-    i_commands -- numpy.ndarray
+    -------
+    i_commands : numpy.ndarray
         Command current pulses
-    f -- numpy.ndarray
+    f : numpy.ndarray
         Action potential frequencies
     """
     f = None
