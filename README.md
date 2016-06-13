@@ -1,5 +1,9 @@
 # CSHL
 
+## Module documentation
+
+https://neurodroid.github.io/CSHL/index.html
+
 ## Installation
 
 ### Mac
