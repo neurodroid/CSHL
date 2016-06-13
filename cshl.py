@@ -110,10 +110,12 @@ def timeconstants(fitwindow, pulsewindow, ichannel=0, vchannel=1):
 
     Parameters
     ----------
-    fitwindow : (float, float)
+    fitwindow : (float, float), optional
         Window for fitting time constant (time in ms from beginning of sweep)
-    pulsewindow : (float, float)
+        None for current cursor settings. Default: None
+    pulsewindow : (float, float), optional
         Window for voltage pulse measurement (time in ms from beginning of sweep)
+        None for current cursor settings. Default: None
     ichannel : int, optional
         current channel number. Default: 0
     vchannel : int, optional
@@ -156,7 +158,8 @@ def timeconstants(fitwindow, pulsewindow, ichannel=0, vchannel=1):
 
         ax_currents.plot(np.arange(len(trace))*dt, trace)
 
-        stf.fit.cursor_time = fitwindow
+        if fitwindow is not None:
+            stf.fit.cursor_time = fitwindow
         res = stf.leastsq(0, False)
         taus.append(res['Tau_0'])
 
@@ -167,7 +170,8 @@ def timeconstants(fitwindow, pulsewindow, ichannel=0, vchannel=1):
 
         stf.set_peak_direction("up")
         stf.set_peak_mean(-1)
-        stf.peak.cursor_time = pulsewindow
+        if pulsewindow is not None:
+            stf.peak.cursor_time = pulsewindow
         stf.measure()
         v_commands.append(stf.peak.value)
 
@@ -201,19 +205,22 @@ def timeconstants(fitwindow, pulsewindow, ichannel=0, vchannel=1):
     return v_commands, taus
 
     
-def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up",
+def iv(peakwindow=None, basewindow=None, pulsewindow=None, erev=None, peakmode="up",
        ichannel=0, vchannel=1):
     """
     Compute and plot an IV curve for currents
 
     Parameters
     ----------
-    peakwindow : (float, float)
+    peakwindow : (float, float), optional
         Window for peak measurement (time in ms from beginning of sweep)
-    basewindow : (float, float)
+        None for current cursor settings. Default: None
+    basewindow : (float, float), optional
         Window for baseline measurement (time in ms from beginning of sweep)
-    pulsewindow : (float, float)
+        None for current cursor settings. Default: None
+    pulsewindow : (float, float), optional
         Window for voltage pulse measurement (time in ms from beginning of sweep)
+        None for current cursor settings. Default: None
     erev : float, optional
         End of v clamp pulse in ms or None to determine automatically.
         Default: None
@@ -276,7 +283,8 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up",
             # Set peak computation to single sampling point
             stf.set_peak_mean(1)
 
-        stf.peak.cursor_time = peakwindow
+        if peakwindow is not None:
+            stf.peak.cursor_time = peakwindow
         stf.measure()
         if basewindow is not None:
             ipeaks.append(stf.peak.value-stf.base.value)
@@ -290,7 +298,8 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up",
 
         stf.set_peak_direction("up")
         stf.set_peak_mean(-1)
-        stf.peak.cursor_time = pulsewindow
+        if pulsewindow is not None:
+            stf.peak.cursor_time = pulsewindow
         stf.measure()
         v_commands.append(stf.peak.value)
 
@@ -348,16 +357,17 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up",
     return v_commands, ipeaks, gpeaks, g_fit
 
 
-def fi(pulsewindow, vthreshold, vchannel=0, ichannel=1):
+def fi(pulsewindow=None, vthreshold=-45.0, vchannel=0, ichannel=1):
     """
     Compute and plot an f-I curve for current clamp recordings
 
     Parameters
     ----------
-    pulsewindow : (float, float)
+    pulsewindow : (float, float), optional
         Window for current pulse measurement (time in ms from beginning of sweep)
-    vthreshold : float
-        Voltage threshold of action potentials
+        None for current cursor settings. Default: None
+    vthreshold : float, optional
+        Voltage threshold of action potentials. Default: -45.0
     vchannel : int, optional
         voltage channel number. Default: 0
     ichannel : int, optional
