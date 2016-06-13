@@ -205,8 +205,8 @@ def timeconstants(fitwindow, pulsewindow, ichannel=0, vchannel=1):
     return v_commands, taus
 
     
-def iv(peakwindow=None, basewindow=None, pulsewindow=None, erev=None, peakmode="up",
-       ichannel=0, vchannel=1):
+def iv(peakwindow=None, basewindow=None, pulsewindow=None,
+       erev=None, peakmode="both", ichannel=0, vchannel=1):
     """
     Compute and plot an IV curve for currents
 
@@ -254,6 +254,7 @@ def iv(peakwindow=None, basewindow=None, pulsewindow=None, erev=None, peakmode="
         return
 
     dt = stf.get_sampling_interval()
+    olddirection = stf.get_peak_direction()
 
     v_commands = []
     ipeaks = []
@@ -328,6 +329,7 @@ def iv(peakwindow=None, basewindow=None, pulsewindow=None, erev=None, peakmode="
 
     # Reset peak computation to single sampling point
     stf.set_peak_mean(1)
+    stf.set_peak_direction(olddirection)
 
     # Reset active channel
     stf.set_channel(ichannel)
