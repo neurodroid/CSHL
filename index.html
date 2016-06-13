@@ -1,0 +1,225 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>CSHL 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="None" href="index.html#document-index" />
+   
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-cshl-s-documentation">
+<h1>Welcome to CSHL&#8217;s documentation!<a class="headerlink" href="#welcome-to-cshl-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+</div>
+<span class="target" id="module-cshl"></span><dl class="function">
+<dt id="cshl.fboltz_up">
+<code class="descclassname">cshl.</code><code class="descname">fboltz_up</code><span class="sig-paren">(</span><em>p</em>, <em>x</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cshl.html#fboltz_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cshl.fboltz_up" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boltzmann function (upwards from 0 to 1)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>p</strong> (<em>numpy.ndarray</em>) &#8211; <span class="math">\(p_0\)</span>, location of half maximum; <span class="math">\(p_1\)</span>, slope</li>
+<li><strong>x</strong> (<em>numpy.ndarray</em>) &#8211; Dependent variable</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>y</strong></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><span class="math">\(y = 1 - \frac{1}{1 + e^\left(x-p_0\right)/p_1}\)</span></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cshl.fi">
+<code class="descclassname">cshl.</code><code class="descname">fi</code><span class="sig-paren">(</span><em>pulsewindow</em>, <em>vthreshold</em>, <em>vchannel=0</em>, <em>ichannel=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cshl.html#fi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cshl.fi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute and plot an f-I curve for current clamp recordings</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pulsewindow</strong> (<em>(float, float)</em>) &#8211; Window for current pulse measurement (time in ms from beginning of sweep)</li>
+<li><strong>vthreshold</strong> (<em>float</em>) &#8211; Voltage threshold of action potentials</li>
+<li><strong>vchannel</strong> (<em>int, optional</em>) &#8211; voltage channel number. Default: 0</li>
+<li><strong>ichannel</strong> (<em>int, optional</em>) &#8211; current channel number. Default: 1</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>i_commands</strong> (<em>numpy.ndarray</em>) &#8211; Command current pulses</li>
+<li><strong>f</strong> (<em>numpy.ndarray</em>) &#8211; Action potential frequencies</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cshl.gv">
+<code class="descclassname">cshl.</code><code class="descname">gv</code><span class="sig-paren">(</span><em>i</em>, <em>v</em>, <em>erev</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cshl.html#gv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cshl.gv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit Boltzmann function to normalized conductance values</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>i</strong> (<em>numpy.ndarray</em>) &#8211; Peak current values</li>
+<li><strong>v</strong> (<em>numpy.ndarray</em>) &#8211; Command voltages</li>
+<li><strong>erev</strong> (<em>float</em>) &#8211; Reversal potential</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>g</strong> (<em>numpy.ndarray</em>) &#8211; Normalized conductances</li>
+<li><strong>gfit</strong> (<em>numpy.ndarray</em>) &#8211; Half-maximal voltage and slope of best-fit Boltzmann function</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cshl.iv">
+<code class="descclassname">cshl.</code><code class="descname">iv</code><span class="sig-paren">(</span><em>peakwindow</em>, <em>basewindow</em>, <em>pulsewindow</em>, <em>erev=None</em>, <em>peakmode='up'</em>, <em>ichannel=0</em>, <em>vchannel=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cshl.html#iv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cshl.iv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute and plot an IV curve for currents</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>peakwindow</strong> (<em>(float, float)</em>) &#8211; Window for peak measurement (time in ms from beginning of sweep)</li>
+<li><strong>basewindow</strong> (<em>(float, float)</em>) &#8211; Window for baseline measurement (time in ms from beginning of sweep)</li>
+<li><strong>pulsewindow</strong> (<em>(float, float)</em>) &#8211; Window for voltage pulse measurement (time in ms from beginning of sweep)</li>
+<li><strong>erev</strong> (<em>float, optional</em>) &#8211; End of v clamp pulse in ms or None to determine automatically.
+Default: None</li>
+<li><strong>peakmode</strong> (<em>string, optional</em>) &#8211; Peak direction - one of &#8220;up&#8221;, &#8220;down&#8221;, &#8220;both&#8221; or &#8220;mean&#8221;. Default: &#8220;up&#8221;</li>
+<li><strong>ichannel</strong> (<em>int, optional</em>) &#8211; current channel number. Default: 0</li>
+<li><strong>vchannel</strong> (<em>int, optional</em>) &#8211; voltage channel number. Default: 1</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>v_commands</strong> (<em>numpy.ndarray</em>) &#8211; Command voltages</li>
+<li><strong>ipeaks</strong> (<em>numpy.ndarray</em>) &#8211; Peak currents</li>
+<li><strong>gpeaks</strong> (<em>numpy.ndarray</em>) &#8211; Peak normalized conductances</li>
+<li><strong>g_fit</strong> (<em>numpy.ndarray</em>) &#8211; Half-maximal voltage and slope of best-fit Boltzmann function</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="cshl.timeconstants">
+<code class="descclassname">cshl.</code><code class="descname">timeconstants</code><span class="sig-paren">(</span><em>fitwindow</em>, <em>pulsewindow</em>, <em>ichannel=0</em>, <em>vchannel=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/cshl.html#timeconstants"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#cshl.timeconstants" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute and plot decay time constants</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fitwindow</strong> (<em>(float, float)</em>) &#8211; Window for fitting time constant (time in ms from beginning of sweep)</li>
+<li><strong>pulsewindow</strong> (<em>(float, float)</em>) &#8211; Window for voltage pulse measurement (time in ms from beginning of sweep)</li>
+<li><strong>ichannel</strong> (<em>int, optional</em>) &#8211; current channel number. Default: 0</li>
+<li><strong>vchannel</strong> (<em>int, optional</em>) &#8211; voltage channel number. Default: 1</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><ul class="simple">
+<li><strong>v_commands</strong> (<em>numpy.ndarray</em>) &#8211; Command voltages</li>
+<li><strong>taus</strong> (<em>numpy.ndarray</em>) &#8211; Time constants</li>
+</ul>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html#document-index">Table Of Contents</a></h3>
+  <ul class="simple">
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html#document-index">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Christoph Schmidt-Hieber.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.6</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
