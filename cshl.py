@@ -168,10 +168,11 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up"):
         Window for baseline measurement (time in ms from beginning of sweep)
     pulsewindow -- (float, float)
         Window for voltage pulse measurement (time in ms from beginning of sweep)
-    erev -- float
-        End of v clamp pulse in ms or None to determine automatically
-    peakmode -- string
-        Peak direction - one of "up", "down", "mean"
+    erev -- float, optional
+        End of v clamp pulse in ms or None to determine automatically.
+        Default: None
+    peakmode -- string, optional
+        Peak direction - one of "up", "down", "both" or "mean". Default: "up"
     """
     import stf
     if not stf.check_doc():
@@ -295,3 +296,20 @@ def gv(i, v, erev):
         leastsq_helper, (v50_init, slope_init), args=(g, fboltz_up, v))[0]
 
     return g, gfit
+
+
+def fi(pulsewindow, vthreshold):
+    """
+    Compute and plot an f-I curve for current clamp recordings
+
+    Parameters
+    ==========
+    pulsewindow -- (float, float)
+        Window for current pulse measurement (time in ms from beginning of sweep)
+    vthreshold -- float
+        Voltage threshold of action potentials
+    """
+    f = None
+    i_commands = None
+
+    return i_commands, f
