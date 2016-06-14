@@ -91,6 +91,65 @@
     <span class="k">return</span> <span class="n">ax</span>
 
 
+<div class="viewcode-block" id="plot_traces"><a class="viewcode-back" href="../index.html#cshl.plot_traces">[docs]</a><span class="k">def</span> <span class="nf">plot_traces</span><span class="p">(</span><span class="n">plotwindow</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ichannel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vchannel</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute and plot an IV curve for currents</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    plotwindow : (float, float), optional</span>
+<span class="sd">        Plot window (in ms from beginning of trace)</span>
+<span class="sd">        None for whole trace. Default: None</span>
+<span class="sd">    ichannel : int, optional</span>
+<span class="sd">        current channel number. Default: 0</span>
+<span class="sd">    vchannel : int, optional</span>
+<span class="sd">        voltage channel number. Default: 1</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">stf</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">stf</span><span class="o">.</span><span class="n">check_doc</span><span class="p">():</span>
+        <span class="k">return</span> <span class="bp">None</span>
+
+    <span class="n">nchannels</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_size_recording</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">nchannels</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="s2">&quot;Function requires 2 channels (0: current; 1: voltage)</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_sampling_interval</span><span class="p">()</span>
+
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">mpl_panel</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span><span class="o">.</span><span class="n">fig</span>
+    <span class="n">fig</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="n">gs</span> <span class="o">=</span> <span class="n">gridspec</span><span class="o">.</span><span class="n">GridSpec</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">ax_currents</span> <span class="o">=</span> <span class="n">stfio_plot</span><span class="o">.</span><span class="n">StandardAxis</span><span class="p">(</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">gs</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">hasx</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">hasy</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">ax_voltages</span> <span class="o">=</span> <span class="n">stfio_plot</span><span class="o">.</span><span class="n">StandardAxis</span><span class="p">(</span>
+        <span class="n">fig</span><span class="p">,</span> <span class="n">gs</span><span class="p">[</span><span class="mi">3</span><span class="p">:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">hasx</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">hasy</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax_currents</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">plotwindow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">istart</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">plotwindow</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="n">dt</span><span class="p">)</span>
+        <span class="n">istop</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">plotwindow</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">dt</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">istart</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">istop</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">for</span> <span class="n">ntrace</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">stf</span><span class="o">.</span><span class="n">get_size_channel</span><span class="p">()):</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">set_trace</span><span class="p">(</span><span class="n">ntrace</span><span class="p">)</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">set_channel</span><span class="p">(</span><span class="n">ichannel</span><span class="p">)</span>
+        <span class="n">trace</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_trace</span><span class="p">()[</span><span class="n">istart</span><span class="p">:</span><span class="n">istop</span><span class="p">]</span>
+
+        <span class="n">ax_currents</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trace</span><span class="p">))</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">trace</span><span class="p">)</span>
+
+        <span class="c1"># Measure pulse amplitude</span>
+        <span class="n">stf</span><span class="o">.</span><span class="n">set_channel</span><span class="p">(</span><span class="n">vchannel</span><span class="p">)</span>
+        <span class="n">trace</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_trace</span><span class="p">()[</span><span class="n">istart</span><span class="p">:</span><span class="n">istop</span><span class="p">]</span>
+        <span class="n">ax_voltages</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">trace</span><span class="p">))</span><span class="o">*</span><span class="n">dt</span><span class="p">,</span> <span class="n">trace</span><span class="p">)</span>
+
+    <span class="n">stfio_plot</span><span class="o">.</span><span class="n">plot_scalebars</span><span class="p">(</span>
+        <span class="n">ax_currents</span><span class="p">,</span> <span class="n">xunits</span><span class="o">=</span><span class="n">stf</span><span class="o">.</span><span class="n">get_xunits</span><span class="p">(),</span> <span class="n">yunits</span><span class="o">=</span><span class="n">stf</span><span class="o">.</span><span class="n">get_yunits</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+    <span class="n">stfio_plot</span><span class="o">.</span><span class="n">plot_scalebars</span><span class="p">(</span>
+        <span class="n">ax_voltages</span><span class="p">,</span> <span class="n">xunits</span><span class="o">=</span><span class="n">stf</span><span class="o">.</span><span class="n">get_xunits</span><span class="p">(),</span> <span class="n">yunits</span><span class="o">=</span><span class="n">stf</span><span class="o">.</span><span class="n">get_yunits</span><span class="p">(</span><span class="n">channel</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span></div>
+
+
 <span class="k">def</span> <span class="nf">leastsq_helper</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">lsfunc</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">y</span> <span class="o">-</span> <span class="n">lsfunc</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
 
@@ -247,7 +306,8 @@
 
     
 <div class="viewcode-block" id="iv"><a class="viewcode-back" href="../index.html#cshl.iv">[docs]</a><span class="k">def</span> <span class="nf">iv</span><span class="p">(</span><span class="n">peakwindow</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">basewindow</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">pulsewindow</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-       <span class="n">erev</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">peakmode</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">ichannel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vchannel</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+       <span class="n">erev</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">peakmode</span><span class="o">=</span><span class="s2">&quot;both&quot;</span><span class="p">,</span> <span class="n">ichannel</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vchannel</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+       <span class="n">exclude</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Compute and plot an IV curve for currents</span>
 
@@ -271,6 +331,8 @@
 <span class="sd">        current channel number. Default: 0</span>
 <span class="sd">    vchannel : int, optional</span>
 <span class="sd">        voltage channel number. Default: 1</span>
+<span class="sd">    exclude : list of ints, optional</span>
+<span class="sd">        List of trace indices to be excluded from the analysis. Default: None</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -310,6 +372,10 @@
     <span class="n">ax_voltages</span> <span class="o">=</span> <span class="n">stfio_plot</span><span class="o">.</span><span class="n">StandardAxis</span><span class="p">(</span>
         <span class="n">fig</span><span class="p">,</span> <span class="n">gs</span><span class="p">[</span><span class="mi">3</span><span class="p">:,</span> <span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">hasx</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">hasy</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="n">ax_currents</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">ntrace</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">stf</span><span class="o">.</span><span class="n">get_size_channel</span><span class="p">()):</span>
+        <span class="k">if</span> <span class="n">exclude</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ntrace</span> <span class="ow">in</span> <span class="n">exclude</span><span class="p">:</span>
+                <span class="k">continue</span>
+
         <span class="n">stf</span><span class="o">.</span><span class="n">set_trace</span><span class="p">(</span><span class="n">ntrace</span><span class="p">)</span>
         <span class="n">stf</span><span class="o">.</span><span class="n">set_channel</span><span class="p">(</span><span class="n">ichannel</span><span class="p">)</span>
         <span class="n">trace</span> <span class="o">=</span> <span class="n">stf</span><span class="o">.</span><span class="n">get_trace</span><span class="p">()</span>
