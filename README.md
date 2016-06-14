@@ -1,5 +1,9 @@
 # CSHL
 
+## Code editor
+
+[Atom](https://atom.io/)
+
 ## Module documentation
 
 https://neurodroid.github.io/CSHL/index.html
