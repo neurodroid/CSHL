@@ -52,7 +52,7 @@ def plot_gv(g, v, vunits, gfit, fig, subplot, sharex=None):
 
 def plot_traces(plotwindow=None, ichannel=0, vchannel=1):
     """
-    Compute and plot an IV curve for currents
+    Show traces in a figure
 
     Parameters
     ----------
