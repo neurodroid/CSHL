@@ -50,6 +50,65 @@ def plot_gv(g, v, vunits, gfit, fig, subplot, sharex=None):
     return ax
 
 
+def plot_traces(plotwindow=None, ichannel=0, vchannel=1):
+    """
+    Compute and plot an IV curve for currents
+
+    Parameters
+    ----------
+    plotwindow : (float, float), optional
+        Plot window (in ms from beginning of trace)
+        None for whole trace. Default: None
+    ichannel : int, optional
+        current channel number. Default: 0
+    vchannel : int, optional
+        voltage channel number. Default: 1
+    """
+
+    import stf
+    if not stf.check_doc():
+        return None
+
+    nchannels = stf.get_size_recording()
+    if nchannels < 2:
+        sys.stderr.write(
+            "Function requires 2 channels (0: current; 1: voltage)\n")
+        return
+
+    dt = stf.get_sampling_interval()
+
+    fig = stf.mpl_panel(figsize=(12, 8)).fig
+    fig.clear()
+    gs = gridspec.GridSpec(4, 1)
+    ax_currents = stfio_plot.StandardAxis(
+        fig, gs[:3, 0], hasx=False, hasy=False)
+    ax_voltages = stfio_plot.StandardAxis(
+        fig, gs[3:, 0], hasx=False, hasy=False, sharex=ax_currents)
+    if plotwindow is not None:
+        istart = int(plotwindow[0]/dt)
+        istop = int(plotwindow[1]/dt)
+    else:
+        istart = 0
+        istop = None
+
+    for ntrace in range(stf.get_size_channel()):
+        stf.set_trace(ntrace)
+        stf.set_channel(ichannel)
+        trace = stf.get_trace()[istart:istop]
+
+        ax_currents.plot(np.arange(len(trace))*dt, trace)
+
+        # Measure pulse amplitude
+        stf.set_channel(vchannel)
+        trace = stf.get_trace()[istart:istop]
+        ax_voltages.plot(np.arange(len(trace))*dt, trace)
+
+    stfio_plot.plot_scalebars(
+        ax_currents, xunits=stf.get_xunits(), yunits=stf.get_yunits(channel=0))
+    stfio_plot.plot_scalebars(
+        ax_voltages, xunits=stf.get_xunits(), yunits=stf.get_yunits(channel=1))
+
+
 def leastsq_helper(p, y, lsfunc, x, *args):
     return y - lsfunc(p, x, *args)
 
@@ -110,10 +169,12 @@ def timeconstants(fitwindow, pulsewindow, ichannel=0, vchannel=1):
 
     Parameters
     ----------
-    fitwindow : (float, float)
+    fitwindow : (float, float), optional
         Window for fitting time constant (time in ms from beginning of sweep)
-    pulsewindow : (float, float)
+        None for current cursor settings. Default: None
+    pulsewindow : (float, float), optional
         Window for voltage pulse measurement (time in ms from beginning of sweep)
+        None for current cursor settings. Default: None
     ichannel : int, optional
         current channel number. Default: 0
     vchannel : int, optional
@@ -156,7 +217,8 @@ def timeconstants(fitwindow, pulsewindow, ichannel=0, vchannel=1):
 
         ax_currents.plot(np.arange(len(trace))*dt, trace)
 
-        stf.fit.cursor_time = fitwindow
+        if fitwindow is not None:
+            stf.fit.cursor_time = fitwindow
         res = stf.leastsq(0, False)
         taus.append(res['Tau_0'])
 
@@ -167,7 +229,8 @@ def timeconstants(fitwindow, pulsewindow, ichannel=0, vchannel=1):
 
         stf.set_peak_direction("up")
         stf.set_peak_mean(-1)
-        stf.peak.cursor_time = pulsewindow
+        if pulsewindow is not None:
+            stf.peak.cursor_time = pulsewindow
         stf.measure()
         v_commands.append(stf.peak.value)
 
@@ -201,19 +264,23 @@ def timeconstants(fitwindow, pulsewindow, ichannel=0, vchannel=1):
     return v_commands, taus
 
     
-def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up",
-       ichannel=0, vchannel=1):
+def iv(peakwindow=None, basewindow=None, pulsewindow=None,
+       erev=None, peakmode="both", ichannel=0, vchannel=1,
+       exclude=None):
     """
     Compute and plot an IV curve for currents
 
     Parameters
     ----------
-    peakwindow : (float, float)
+    peakwindow : (float, float), optional
         Window for peak measurement (time in ms from beginning of sweep)
-    basewindow : (float, float)
+        None for current cursor settings. Default: None
+    basewindow : (float, float), optional
         Window for baseline measurement (time in ms from beginning of sweep)
-    pulsewindow : (float, float)
+        None for current cursor settings. Default: None
+    pulsewindow : (float, float), optional
         Window for voltage pulse measurement (time in ms from beginning of sweep)
+        None for current cursor settings. Default: None
     erev : float, optional
         End of v clamp pulse in ms or None to determine automatically.
         Default: None
@@ -223,6 +290,8 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up",
         current channel number. Default: 0
     vchannel : int, optional
         voltage channel number. Default: 1
+    exclude : list of ints, optional
+        List of trace indices to be excluded from the analysis. Default: None
 
     Returns
     -------
@@ -247,6 +316,7 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up",
         return
 
     dt = stf.get_sampling_interval()
+    olddirection = stf.get_peak_direction()
 
     v_commands = []
     ipeaks = []
@@ -261,6 +331,10 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up",
     ax_voltages = stfio_plot.StandardAxis(
         fig, gs[3:, :4], hasx=False, hasy=False, sharex=ax_currents)
     for ntrace in range(stf.get_size_channel()):
+        if exclude is not None:
+            if ntrace in exclude:
+                continue
+
         stf.set_trace(ntrace)
         stf.set_channel(ichannel)
         trace = stf.get_trace()
@@ -276,7 +350,8 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up",
             # Set peak computation to single sampling point
             stf.set_peak_mean(1)
 
-        stf.peak.cursor_time = peakwindow
+        if peakwindow is not None:
+            stf.peak.cursor_time = peakwindow
         stf.measure()
         if basewindow is not None:
             ipeaks.append(stf.peak.value-stf.base.value)
@@ -290,7 +365,8 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up",
 
         stf.set_peak_direction("up")
         stf.set_peak_mean(-1)
-        stf.peak.cursor_time = pulsewindow
+        if pulsewindow is not None:
+            stf.peak.cursor_time = pulsewindow
         stf.measure()
         v_commands.append(stf.peak.value)
 
@@ -319,6 +395,7 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up",
 
     # Reset peak computation to single sampling point
     stf.set_peak_mean(1)
+    stf.set_peak_direction(olddirection)
 
     # Reset active channel
     stf.set_channel(ichannel)
@@ -348,16 +425,17 @@ def iv(peakwindow, basewindow, pulsewindow, erev=None, peakmode="up",
     return v_commands, ipeaks, gpeaks, g_fit
 
 
-def fi(pulsewindow, vthreshold, vchannel=0, ichannel=1):
+def fi(pulsewindow=None, vthreshold=-45.0, vchannel=0, ichannel=1):
     """
     Compute and plot an f-I curve for current clamp recordings
 
     Parameters
     ----------
-    pulsewindow : (float, float)
+    pulsewindow : (float, float), optional
         Window for current pulse measurement (time in ms from beginning of sweep)
-    vthreshold : float
-        Voltage threshold of action potentials
+        None for current cursor settings. Default: None
+    vthreshold : float, optional
+        Voltage threshold of action potentials. Default: -45.0
     vchannel : int, optional
         voltage channel number. Default: 0
     ichannel : int, optional
