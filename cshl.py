@@ -103,6 +103,9 @@ def plot_traces(plotwindow=None, ichannel=0, vchannel=1):
         trace = stf.get_trace()[istart:istop]
         ax_voltages.plot(np.arange(len(trace))*dt, trace)
 
+    # Reset active channel
+    stf.set_channel(ichannel)
+
     stfio_plot.plot_scalebars(
         ax_currents, xunits=stf.get_xunits(), yunits=stf.get_yunits(channel=0))
     stfio_plot.plot_scalebars(
