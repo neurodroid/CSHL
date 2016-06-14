@@ -265,7 +265,8 @@ def timeconstants(fitwindow, pulsewindow, ichannel=0, vchannel=1):
 
     
 def iv(peakwindow=None, basewindow=None, pulsewindow=None,
-       erev=None, peakmode="both", ichannel=0, vchannel=1):
+       erev=None, peakmode="both", ichannel=0, vchannel=1,
+       exclude=None):
     """
     Compute and plot an IV curve for currents
 
@@ -289,6 +290,8 @@ def iv(peakwindow=None, basewindow=None, pulsewindow=None,
         current channel number. Default: 0
     vchannel : int, optional
         voltage channel number. Default: 1
+    exclude : list of ints, optional
+        List of trace indices to be excluded from the analysis. Default: None
 
     Returns
     -------
@@ -328,6 +331,10 @@ def iv(peakwindow=None, basewindow=None, pulsewindow=None,
     ax_voltages = stfio_plot.StandardAxis(
         fig, gs[3:, :4], hasx=False, hasy=False, sharex=ax_currents)
     for ntrace in range(stf.get_size_channel()):
+        if exclude is not None:
+            if ntrace in exclude:
+                continue
+
         stf.set_trace(ntrace)
         stf.set_channel(ichannel)
         trace = stf.get_trace()
