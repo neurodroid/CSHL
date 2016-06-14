@@ -50,6 +50,65 @@ def plot_gv(g, v, vunits, gfit, fig, subplot, sharex=None):
     return ax
 
 
+def plot_traces(plotwindow=None, ichannel=0, vchannel=1):
+    """
+    Compute and plot an IV curve for currents
+
+    Parameters
+    ----------
+    plotwindow : (float, float), optional
+        Plot window (in ms from beginning of trace)
+        None for whole trace. Default: None
+    ichannel : int, optional
+        current channel number. Default: 0
+    vchannel : int, optional
+        voltage channel number. Default: 1
+    """
+
+    import stf
+    if not stf.check_doc():
+        return None
+
+    nchannels = stf.get_size_recording()
+    if nchannels < 2:
+        sys.stderr.write(
+            "Function requires 2 channels (0: current; 1: voltage)\n")
+        return
+
+    dt = stf.get_sampling_interval()
+
+    fig = stf.mpl_panel(figsize=(12, 8)).fig
+    fig.clear()
+    gs = gridspec.GridSpec(4, 1)
+    ax_currents = stfio_plot.StandardAxis(
+        fig, gs[:3, 0], hasx=False, hasy=False)
+    ax_voltages = stfio_plot.StandardAxis(
+        fig, gs[3:, 0], hasx=False, hasy=False, sharex=ax_currents)
+    if plotwindow is not None:
+        istart = plotwindow[0]/dt
+        istop = plotwindow[1]/dt
+    else:
+        istart = 0
+        istop = None
+
+    for ntrace in range(stf.get_size_channel()):
+        stf.set_trace(ntrace)
+        stf.set_channel(ichannel)
+        trace = stf.get_trace()[istart:istop]
+
+        ax_currents.plot(np.arange(len(trace))*dt, trace)
+
+        # Measure pulse amplitude
+        stf.set_channel(vchannel)
+        trace = stf.get_trace()[istart:istop]
+        ax_voltages.plot(np.arange(len(trace))*dt, trace)
+
+    stfio_plot.plot_scalebars(
+        ax_currents, xunits=stf.get_xunits(), yunits=stf.get_yunits(channel=0))
+    stfio_plot.plot_scalebars(
+        ax_voltages, xunits=stf.get_xunits(), yunits=stf.get_yunits(channel=1))
+
+
 def leastsq_helper(p, y, lsfunc, x, *args):
     return y - lsfunc(p, x, *args)
 
