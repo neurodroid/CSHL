@@ -85,8 +85,8 @@ def plot_traces(plotwindow=None, ichannel=0, vchannel=1):
     ax_voltages = stfio_plot.StandardAxis(
         fig, gs[3:, 0], hasx=False, hasy=False, sharex=ax_currents)
     if plotwindow is not None:
-        istart = plotwindow[0]/dt
-        istop = plotwindow[1]/dt
+        istart = int(plotwindow[0]/dt)
+        istop = int(plotwindow[1]/dt)
     else:
         istart = 0
         istop = None
