@@ -1,3 +1,6 @@
+import numpy as np
+from scipy.optimize import leastsq
+
 def leastsq_helper(p, y, lsfunc, x, *args):
     return y - lsfunc(p, x, *args)
 

@@ -1,7 +1,6 @@
 import sys
 
 import numpy as np
-from scipy.optimize import leastsq
 
 from mpl_toolkits.axes_grid.axislines import SubplotZero, Subplot
 import matplotlib.gridspec as gridspec

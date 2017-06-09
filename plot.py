@@ -28,7 +28,7 @@ def plot_traces(mode):
     return fig, axi, axv
 
 
-def plot_iv():
+def plot_iv(ylabel='Current (pA)'):
     fig = plt.figure()
     ax = fig.add_subplot(111)
     ax.spines['left'].set_position('zero')
@@ -38,7 +38,7 @@ def plot_iv():
     ax.spines['left'].set_smart_bounds(True)
     ax.spines['bottom'].set_smart_bounds(True)
     ax.set_xlabel('Voltage (mV)')
-    ax.set_ylabel('Current (pA)')
+    ax.set_ylabel(ylabel)
 
     return fig, ax
 
