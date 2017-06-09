@@ -1,0 +1,57 @@
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+
+def plot_traces(mode):
+    gs = gridspec.GridSpec(4, 1)
+    fig = plt.figure()
+    axi = fig.add_subplot(gs[:3, 0])
+    axv = fig.add_subplot(gs[3:, 0], sharex = axi)
+    axi.spines['right'].set_color('none')
+    axi.spines['top'].set_color('none')
+    axi.spines['bottom'].set_color('none')
+    plt.setp(axi.get_xticklabels(), visible=False)
+    plt.setp(axi.get_xticklines(), visible=False)
+    axv.spines['right'].set_color('none')
+    axv.spines['top'].set_color('none')
+    axi.spines['left'].set_smart_bounds(True)
+    axv.spines['left'].set_smart_bounds(True)
+    axv.spines['bottom'].set_smart_bounds(True)
+    if mode is 'vclamp':
+        axi.set_ylabel('Current (pA)')
+        axv.set_ylabel('Voltage (mV)')
+    else:
+        axv.set_ylabel('Current (pA)')
+        axi.set_ylabel('Voltage (mV)')
+
+    axv.set_xlabel('Time (ms)')
+
+    return fig, axi, axv
+
+
+def plot_iv():
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.spines['left'].set_position('zero')
+    ax.spines['right'].set_color('none')
+    ax.spines['bottom'].set_position('zero')
+    ax.spines['top'].set_color('none')
+    ax.spines['left'].set_smart_bounds(True)
+    ax.spines['bottom'].set_smart_bounds(True)
+    ax.set_xlabel('Voltage (mV)')
+    ax.set_ylabel('Current (pA)')
+
+    return fig, ax
+
+def plot_fi():
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    ax.spines['left'].set_position('zero')
+    ax.spines['right'].set_color('none')
+    ax.spines['bottom'].set_position('zero')
+    ax.spines['top'].set_color('none')
+    ax.spines['left'].set_smart_bounds(True)
+    ax.spines['bottom'].set_smart_bounds(True)
+    ax.set_xlabel('Current (pA)')
+    ax.set_ylabel('Frequency (Hz)')
+
+    return fig, ax
