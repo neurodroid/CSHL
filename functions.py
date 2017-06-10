@@ -24,6 +24,28 @@ def fboltz_up(p, x):
     return 1.0 - 1.0/(1.0+np.exp((x-p[0])/p[1]))
 
 
+def fexp(p, x):
+    """
+    Exponential function
+
+    Parameters
+    ----------
+    p : numpy.ndarray
+        :math:`p_0`, amplitude; :math:`p_1`, :math:`\tau`; :math:`p_2`, offset
+    x : numpy.ndarray
+        Dependent variable
+
+    Returns
+    -------
+    boltzmann : numpy.ndarray
+        :math:`y = p_0 \left( e^{\frac{-x}{\tau}} \right) + p_2`
+    """
+    amp = p[0]
+    tau = p[1]
+    offset = p[2]
+    return amp*(-np.exp(-x/tau)) + offset
+
+
 def gv(i, v, erev):
     """
     Fit Boltzmann function to normalized conductance values

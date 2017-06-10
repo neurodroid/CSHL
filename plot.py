@@ -28,12 +28,13 @@ def plot_traces(mode):
     return fig, axi, axv
 
 
-def plot_iv(ylabel='Current (pA)'):
+def plot_iv(ylabel='Current (pA)', zeroori=True):
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.spines['left'].set_position('zero')
+    if zeroori:
+        ax.spines['left'].set_position('zero')
+        ax.spines['bottom'].set_position('zero')
     ax.spines['right'].set_color('none')
-    ax.spines['bottom'].set_position('zero')
     ax.spines['top'].set_color('none')
     ax.spines['left'].set_smart_bounds(True)
     ax.spines['bottom'].set_smart_bounds(True)
