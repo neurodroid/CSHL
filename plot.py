@@ -43,16 +43,17 @@ def plot_iv(xlabel='Voltage (mV)', ylabel='Current (pA)', zeroori=True):
 
     return fig, ax
 
-def plot_fi():
+def plot_fi(ylabel='Frequency (Hz)', zeroori=True):
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.spines['left'].set_position('zero')
     ax.spines['right'].set_color('none')
-    ax.spines['bottom'].set_position('zero')
     ax.spines['top'].set_color('none')
+    if zeroori:
+        ax.spines['left'].set_position('zero')
+        ax.spines['bottom'].set_position('zero')
     ax.spines['left'].set_smart_bounds(True)
     ax.spines['bottom'].set_smart_bounds(True)
     ax.set_xlabel('Current (pA)')
-    ax.set_ylabel('Frequency (Hz)')
+    ax.set_ylabel(ylabel)
 
     return fig, ax
