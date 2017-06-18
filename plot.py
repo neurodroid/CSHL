@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 
-def plot_traces(mode):
+def plot_traces(mode, xlabel='Time (ms)'):
     gs = gridspec.GridSpec(4, 1)
     fig = plt.figure()
     axi = fig.add_subplot(gs[:3, 0])
@@ -23,7 +23,7 @@ def plot_traces(mode):
         axv.set_ylabel('Current (pA)')
         axi.set_ylabel('Voltage (mV)')
 
-    axv.set_xlabel('Time (ms)')
+    axv.set_xlabel(xlabel)
 
     return fig, axi, axv
 
