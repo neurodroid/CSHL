@@ -57,3 +57,10 @@ def plot_fi(ylabel='Frequency (Hz)', zeroori=True):
     ax.set_ylabel(ylabel)
 
     return fig, ax
+
+
+def openfile_dialog():
+    from PyQt4 import QtGui
+    app = QtGui.QApplication([dir])
+    fname = QtGui.QFileDialog.getOpenFileName(None, "Select a file...", '.', filter="All files (*)")
+    return str(fname)
