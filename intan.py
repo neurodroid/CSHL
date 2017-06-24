@@ -274,7 +274,7 @@ class IntanFile(object):
 
         # Timestamps + DigIn + DigOut + ADCs
         size_of_one = int(4 + 2 + 2 + 2 * self.header["NumADCs"])
-        length = int((file_size-start_pos) / size_of_one)
+        length = int(np.round((file_size-start_pos) / size_of_one))
 
         # Read in the whole thing at once
         byte_array = np.fromfile(self.fid, np.uint8, count=length*size_of_one)
