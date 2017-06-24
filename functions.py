@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.optimize import leastsq
+import scipy
 
 def leastsq_helper(p, y, lsfunc, x, *args):
     return y - lsfunc(p, x, *args)
@@ -76,4 +77,16 @@ def gv(i, v, erev):
 
     return g, gfit
 
+
+def tri_norm(x, *args):
+    m1, m2, m3, s1, s2, s3, k1, k2, k3 = args
+    ret = k1*scipy.stats.norm.pdf(x, loc=m1 ,scale=s1)
+    ret += k2*scipy.stats.norm.pdf(x, loc=m2 ,scale=s2)
+    ret += k3*scipy.stats.norm.pdf(x, loc=m3 ,scale=s3)
+    return ret
+
+
+def single_norm(x, *args):
+    m1, s1, k1 = args
+    return k1*scipy.stats.norm.pdf(x, loc=m1 ,scale=s1)
 
