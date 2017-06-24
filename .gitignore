@@ -3,3 +3,4 @@
 doc/build
 doc/make.bat
 .ipynb_checkpoints
+.DS_Store
