@@ -86,7 +86,13 @@ def tri_norm(x, *args):
     return ret
 
 
+def bi_norm(x, *args):
+    m1, m2, s1, s2, k1, k2 = args
+    ret = k1*scipy.stats.norm.pdf(x, loc=m1 ,scale=s1)
+    ret += k2*scipy.stats.norm.pdf(x, loc=m2 ,scale=s2)
+    return ret
+
+
 def single_norm(x, *args):
     m1, s1, k1 = args
     return k1*scipy.stats.norm.pdf(x, loc=m1 ,scale=s1)
-
