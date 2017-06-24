@@ -59,7 +59,7 @@ class IntanFile(object):
         verbose : int, optional
             Print information while reading. Default: 0
         """
-        with open(self.filename, 'r') as self.fid:
+        with open(self.filename, 'rb') as self.fid:
             self._read_header(verbose)
             if self.header["datatype"] == 0:
                 self._read_data()
