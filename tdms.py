@@ -47,6 +47,6 @@ def read_tdms(fn):
                  for group in tdms_file.groups()}
     recording["dt"] = dt
     recording["yunits"] = yunits
-    recording["holding"] = meta[0]
+    recording["holding"] = meta
 
     return recording
