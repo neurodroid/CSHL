@@ -40,11 +40,13 @@ def read_tdms(fn):
     except:
         meta = ''
 
-    recording = {group: [
-        channel.data
-        for channel in tdms_file.group_channels(group)
-        if channel.data is not None]
-                 for group in tdms_file.groups()}
+    recording = {
+        group: [
+            channel.data.astype(np.float64)
+            for channel in tdms_file.group_channels(group)
+            if channel.data is not None]
+        for group in tdms_file.groups()
+        if group.lower()[:2] == "ai" or group.lower()[:2] == "ao"}
     recording["dt"] = dt
     recording["yunits"] = yunits
     recording["holding"] = meta
