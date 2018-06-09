@@ -35,6 +35,11 @@ def read_tdms(fn):
                 dt = 1.0/25.0
 
     yunits = tdms_file.object().properties['Units']
+    try:
+        meta = tdms_file.group_channels('Meta')
+    except:
+        meta = ''
+
     recording = {group: [
         channel.data
         for channel in tdms_file.group_channels(group)
@@ -42,5 +47,6 @@ def read_tdms(fn):
                  for group in tdms_file.groups()}
     recording["dt"] = dt
     recording["yunits"] = yunits
+    recording["holding"] = meta[0]
 
     return recording
