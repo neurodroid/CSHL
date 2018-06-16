@@ -59,7 +59,7 @@ class IntanFile(object):
         verbose : int, optional
             Print information while reading. Default: 0
         """
-        with open(self.filename, 'rb') as self.fid:
+        with open(self.filename, 'r') as self.fid:
             self._read_header(verbose)
             if self.header["datatype"] == 0:
                 self._read_data()
@@ -273,22 +273,36 @@ class IntanFile(object):
         self.fid.seek(start_pos, 0)
 
         # Timestamps + DigIn + DigOut + ADCs
-        size_of_one = int(4 + 2 + 2 + 2 * self.header["NumADCs"])
+        size_of_one = 4 + 2 + 2 + 2 * self.header["NumADCs"]
         length = int(np.round((file_size-start_pos) / size_of_one))
 
         # Read in the whole thing at once
         byte_array = np.fromfile(self.fid, np.uint8, count=length*size_of_one)
         data_matrix = byte_array.reshape((size_of_one, length), order='F')
 
+        digin = data_matrix[4:6, :].reshape(
+            (2*length), order='F').view(np.uint16)
+        diginbits = np.unpackbits(digin.view(np.uint8))
+        diginbits = diginbits.reshape((diginbits.shape[0]/16, 16)).T
+        diginbits[0:8, :] = diginbits[7::-1, :]
+        diginbits[8:16, :] = diginbits[15:7:-1, :]
+
+        digout = data_matrix[6:8, :].reshape(
+            (2*length), order='F').view(np.uint16)
+        digoutbits = np.unpackbits(digout.view(np.uint8))
+        digoutbits = digoutbits.reshape((digoutbits.shape[0]/16, 16)).T
+        digoutbits[0:8, :] = digoutbits[7::-1, :]
+        digoutbits[8:16, :] = digoutbits[15:7:-1, :]
+
         # Now extract the pieces we need
         self.data = {
             "Time": data_matrix[0:4, :].reshape(
                 (4*length), order='F').view(np.uint32).astype(
                     np.float64) / self.header["Settings"]["SamplingRate"],
-            "DigitalIn": data_matrix[4:6, :].reshape(
-                (2*length), order='F').view(np.uint16),
-            "DigitalOut": data_matrix[6:8, :].reshape(
-                (2*length), order='F').view(np.uint16),
+            "DigitalIn": diginbits[0],
+            "DigitalInAll": diginbits,
+            "DigitalOut": digoutbits[0],
+            "DigitalOutAll": digoutbits,
             "ADC": np.array([
                 0.0003125 * data_matrix[2*i+6:2*i+8, :].reshape(
                     (2*length), order='F').view(
